@@ -11,8 +11,6 @@ FORBIDDEN_PROMPT_RE = re.compile(
     r"(\*\*|```|negative prompt|col19|<<<|<anchor>|</|【|】)", re.IGNORECASE
 )
 CJK_RE = re.compile(r"[一-鿿]")  # prompt 必须全英文
-# 人数上限 3:匹配 4girls/5boys 这类显式超员 tag
-OVERCROWD_RE = re.compile(r"\b(?:[4-9]|\d{2,})\s*(?:girls?|boys?|guys?|women|men)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -49,8 +47,6 @@ def validate(blocks: list[ImageBlock], story: str, expected: int) -> list[str]:
             errors.append(f"第{i}块 prompt 含中文(角色姓名/ID 不得出现在 prompt)")
         if FORBIDDEN_PROMPT_RE.search(b.prompt):
             errors.append(f"第{i}块 prompt 含禁用内容(markdown/权重/col19 等)")
-        if OVERCROWD_RE.search(b.prompt):
-            errors.append(f"第{i}块 prompt 人数超过 3 人上限(含 4girls/5boys 类 tag)")
     # anchor 应按剧情顺序:在正文中的位置递增
     positions = [story.find(b.anchor) for b in blocks if b.anchor in story]
     if positions != sorted(positions):
