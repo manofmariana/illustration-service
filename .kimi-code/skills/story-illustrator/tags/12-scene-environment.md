@@ -3,6 +3,25 @@
 > 对应槽位：`[scene/environment]`
 > 场景不只是背景——它决定体位配合、风险感和情感氛围。本章按私密程度组织，每场景配适用体位提示。
 
+### 12.0 世界风格锚定(必须)
+
+> ⚡ **铁律**:每个 prompt 的 scene 槽位**第 1 个 tag 必须是世界风格锚定**(下表),写明是 现代/未来/蒸汽朋克/赛博朋克/科幻/东方武侠修仙/西方奇幻/中世纪/近代——风格不清是最大事故源,模型会把汉服画进霓虹都市。
+> 锚定后必须与 clothing/建筑/detail 槽保持一致(见 slot-order §4.1),表内 "不存在" 的风格用自然语言短句锚定(放 prompt 末尾)。
+
+| 世界风格 | 锚定 tag(已验证) | 配衬 tag |
+|---|---|---|
+| 现代/都市日常 | 无可靠 tag(`modern` 为 0 使用) → 自然语言 `modern city` / `modern apartment` / `suburban street` | `city` `skyscraper` `street` `apartment` |
+| 未来/科幻 | `science_fiction`(59150) | `space_station` `space_ship` `mecha`(55421);`futuristic` 0 使用,勿用 |
+| 蒸汽朋克 | `steampunk`(2094) | `victorian` `industrial`(663) `clockwork`(自然语言) |
+| 赛博朋克 | `cyberpunk`(4379) | `cyberspace` `city, neon lights`(自然语言);`cyberpunk city` 不存在 |
+| 东方武侠/修仙 | `wuxia`(63) | `hanfu` `chinese dress` `ancient shrine` `torii gate`(和风勿混);`xianxia`/`chinese_fantasy` 不存在 → + 自然语言 `chinese immortal sects` |
+| 西方奇幻 | `fantasy`(20301) | `castle`(10455) `dungeon` `magic circle`;`high_fantasy`/`western_fantasy` 不存在 |
+| 中世纪 | `medieval`(1502) | `castle` `knight armor` `village`;`medieval_fantasy` 不存在 |
+| 近代(维多利亚/复古/工业) | `victorian`(1472) 或 `renaissance`(81) 或 `industrial`(663) | `dieselpunk`(64) 柴油朋克 |
+| 末世/废土 | `post-apocalyptic`(0 使用) → 自然语言 `destroyed city` | `ruins` `sandstorm` `rubble` |
+
+**推断顺序**:正文场景信息(朝代/灵力/机甲/魔法/末世)→ 角色资料(仙侠服装/军装/机娘)→ 正文环境描写;三处矛盾时以正文场景信息为准,但需用锚定 tag 统一到同一风格。
+
 ### 12.1 场所速查
 
 #### 私密空间（低风险，可尽情发挥）
