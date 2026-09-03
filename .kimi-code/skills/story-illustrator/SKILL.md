@@ -63,6 +63,7 @@ whenToUse: 由 illustration-service facade 通过 REST 激活,处理正文插图
 ### 第 5 步:场景分类
 - 打开 `rules/decision-tree.md`,匹配场景类型(单人展示/双人前戏/双人正戏/多人/百合/特殊体位/特殊主题),获取槽位侧重与镜头推荐
 - 命中特殊主题(NTR/束缚/调教/胁迫/偷窥等 12 类)→ 先 Grep `tags/14-special-theme.md` 对应小节取跨槽位配方
+- **NSFW 必要环节**:凡是 NSFW 瞬间,必须按 `tags/15-nsfx-symbols.md` 补爱心符号 tag(至少 1 个,优先 `heart`)与拟声词 tag(`sound_effects` 系至少 1 个,静谧场景可豁免拟声词);具体拟声词 romaji 拼写不是 tag,一律 `sound_effects` + 自然语言描述
 
 ### 第 6 步:逐槽位组装
 - 槽位顺序与数量控制见 `rules/slot-order.md`
@@ -135,3 +136,4 @@ BREAK
 | `rules/conflict-check.md` | 6 项自检清单 + 互斥标签表 | 第 7 步 |
 | `tags/INDEX.md` | 标签库关键词路由 | 第 6 步查库前 |
 | `tags/06-14 *.md` | 9 个槽位标签库文件 | Grep 查询 |
+| `tags/15-nsfx-symbols.md` | NSFW 必要环节:爱心符号/拟声词真实 tag 表 | 第 5 步,NSFW 瞬间必查 |
