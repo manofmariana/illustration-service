@@ -1,0 +1,11 @@
+# 第三方 MCP 备份(含虚拟环境,体积大,不入库)
+Booru-Pictag-Get-MCP/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 测试产物
+facade_test_response.txt
+*.log
