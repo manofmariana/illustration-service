@@ -3,22 +3,7 @@
 > 对应槽位：`[detail/mood]`
 > 画面「看起来像什么」和「给人什么感觉」——不包含场景地点（§12）和镜头（§11）。灯光/光影/色调禁止输出（lora已内置），仅允许以下非光影的氛围与特效标签。
 
-### 13.1 画面质感
-
-改变画面的「媒介感」——让它看起来像水墨、素描、漫画、老照片等。选1个即可，除非刻意混搭。
-
-| 风格 | 核心标签 | 法典使用频率 | 适用场景 |
-|---|---|---|---|
-| 水墨风 | `ink splash, ink wash, calligraphic brushstrokes, watercolor texture` | ★★★★★ 611次 | 古风/和风/写意 |
-| 漫画风 | `comic-style, halftone dots, screentone patterns, comic, greyscale` | ★★★★ 49次 | 差分/前后对比/恶堕 |
-| 素描风 | `sketch, lineart, scribbly shading` | ★★ | 粗粝感/未完成感 |
-| 绘画风 | `painterly` | ★ | 油画/厚涂质感 |
-| 胶片风 | `film grain, vintage film grain, heavy film grain overlay, emulsion scratch` | ★★★ | 怀旧/偷拍/记录感 |
-| 黑白 | `greyscale, black and white, monochrome, spot color, limited palette` | ★★ | 压抑/严肃/艺术化 |
-
-**使用规则**：同一个 prompt 不混搭超过 2 种质感风格。`ink splash` + `comic-style` = 水墨漫画风，合理；`ink splash` + `film grain` + `glitch` = 车祸。
-
-### 13.2 运动渲染
+### 13.1 运动渲染
 
 法典中使用频率最高的 mood 类标签类型。强化动作感和速度感，适合高强度性爱场景。
 
@@ -32,7 +17,7 @@
 
 **使用规则**：`motion lines` 偏漫画风格，`motion blur` 偏摄影风格，二选一即可。`speed lines` + `motion blur` 可叠加但不要叠 3 个以上运动标签。适用体位——后入、骑乘、种付、传教士冲刺阶段。
 
-### 13.3 光学/摄影效果
+### 13.2 光学/摄影效果
 
 | 类型 | 核心标签 | 法典频率 | 效果与适用 |
 |---|---|---|---|
@@ -45,7 +30,7 @@
 | 暗角 | `vignette` | ★ | 边缘压暗——私密/压抑/聚焦中心 |
 | 多重曝光 | `multiple exposure effect` | ★ | 重叠影像——回忆/幻象/恍惚 |
 
-### 13.4 数字/故障效果
+### 13.3 数字/故障效果
 
 | 类型 | 核心标签 | 适用场景 |
 |---|---|---|
@@ -56,7 +41,7 @@
 
 **使用规则**：数字效果是强风格标签，选1个即可。`glitch` + `VHS` 可叠加（故障录像带），但不要叠到第3个。适合赛博/催眠/偷拍类场景，日常性爱不要用。
 
-### 13.5 氛围基调
+### 13.4 氛围基调
 
 非光线的纯情绪氛围词，给画面定情绪基调。
 
@@ -72,7 +57,7 @@
 
 **使用规则**：氛围词只选1个，它是全局情绪基调。`cinematic` + `ethereal` 可以（史诗空灵），`dark atmosphere` + `poetic` 矛盾。
 
-### 13.6 禁止输出清单
+### 13.5 禁止输出清单
 
 > ⚠️ 以下类型标签绝对禁止出现在 prompt 中（lora已内置光影效果，违者画面将被强光源污染）：
 
