@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "booru-pictag-get": {
+      "command": "D:\\ComfyUI_windows_portable\\illustration-service\\Booru-Pictag-Get-MCP\\.venv\\Scripts\\booru-pictag-get-mcp.exe",
+      "env": {
+        "BOORU_DEFAULT_PROVIDER": "danbooru"
+      }
+    }
+  }
+}

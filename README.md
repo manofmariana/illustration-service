@@ -63,3 +63,9 @@ facade 同时注册了四条路径,网页端填哪个都行:
 
 - **SSE 信封**:`facade/sse.py` 按 OpenAI Responses API 标准事件实现。若网页不认,抓一条 DeepSeek 真实响应流对照修改此文件即可,其他层不动。
 - **超时**:agent 设计需几十秒到几分钟;网页端等待期间 facade 持有连接不发数据。若网页有短超时,需要确认其值并调 `AGENT_TIMEOUT`。
+
+## MCP(Booru-Pictag-Get,备用)
+
+- 注册在 `.kimi-code/mcp.json`,指向本仓库内的 `Booru-Pictag-Get-MCP/.venv` 可执行文件——随仓库走,换机器重新装依赖即可
+- **仅手动会话可用**:MCP 工具只在用户手动打开的会话中生效(会话启动时加载);自动流程(facade → kimi agent)由 skill 铁律 1 永久禁用 MCP,不会触发
+- 本目录不再注册 MCP 时,删除 `.kimi-code/mcp.json` 即可
