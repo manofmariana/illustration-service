@@ -80,8 +80,10 @@
 | appearance | 每个角色≥3锚点防串脸，男方可用 `faceless male` 简化 | §7 |
 | pose/action | 选孔穴占用类型（spitroast/triple/dp）+包围程度；体液层次选上限 | §9.4 |
 | expression | 女方默认Lv3-4，多男方可省略表情 | §10.2 |
-| camera | `from above, full body` 容纳全员；spitroast 用 `from side` | §11.5 |
+| camera | 复杂互动/3 人优先**男方 POV**(`pov, pov hands`),男性只露局部、不画全身;全员全景图仍可用 `from above, full body`,spitroast 用 `from side` | §11.3, §11.5 |
 | scene | 大空间 `bedroom/dungeon/public`，配人群 `surrounded/crowd` | §12 |
+
+> 注意:本服务全局上限 3 人(见 SKILL 铁律),4 人及以上剧情改选其中 1~2 人特写;复杂互动场景 POV 优先于全景。
 
 **特殊主题交叉**：若为 RBQ/轮奸/胁迫性群交，先查 §14.3/§14.7 获取物化/体液/胁迫标签。
 
