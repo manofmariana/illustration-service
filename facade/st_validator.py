@@ -24,7 +24,7 @@ SUB_RE = {
     "size": re.compile(r"<size>(.*?)</size>", re.DOTALL),
     "prompts": re.compile(r"<prompts>(.*?)</prompts>", re.DOTALL),
 }
-VALID_SIZES = {"832x1216", "1216x832", "1024x1024"}
+VALID_SIZES = {"1024x1536", "1536x1024", "1280x1280"}
 CJK_RE = re.compile(r"[一-鿿]")
 FORBIDDEN_TAGS_RE = re.compile(r"(\*\*|```|negative prompt|<\w+>|【|】|sāfe)", re.IGNORECASE)
 
