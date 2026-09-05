@@ -67,7 +67,7 @@ facade 同时注册了四条路径,网页端填哪个都行:
 ## MCP(Booru-Pictag-Get,备用)
 
 - 注册在 `.kimi-code/mcp.json`,指向本仓库内的 `Booru-Pictag-Get-MCP/.venv` 可执行文件——随仓库走,换机器重新装依赖即可
-- **仅手动会话可用**:MCP 工具只在用户手动打开的会话中生效(会话启动时加载);自动流程(facade → kimi agent)由 skill 铁律 1 永久禁用 MCP,不会触发
+- **用途严格受限**:技能铁律规定 booru MCP **只允许搜索同人/IP 角色**(查角色标准 tag:角色名/外观/服装,每名角色最多 2 次),场景/体位/物品等其他内容一律禁用 MCP
 - 本目录不再注册 MCP 时,删除 `.kimi-code/mcp.json` 即可
 
 ## ST(SillyTavern)专用服务
