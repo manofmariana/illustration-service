@@ -9,3 +9,6 @@ __pycache__/
 # 测试产物
 facade_test_response.txt
 *.log
+
+# 联调抓包落盘
+logs/

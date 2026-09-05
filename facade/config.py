@@ -14,6 +14,10 @@ KIMI_MODEL = os.environ.get("KIMI_MODEL", "Deepseek/deepseek-v4-flash-vision-exp
 
 FACADE_HOST = os.environ.get("FACADE_HOST", "0.0.0.0")
 FACADE_PORT = int(os.environ.get("FACADE_PORT", "8388"))
+# SillyTavern 专用隔离服务(输出契约与网页端完全不同,互不混用)
+ST_SKILL_NAME = "story-illustrator-st"
+ST_PORT = int(os.environ.get("ST_PORT", "8389"))
+LOG_DIR = BASE_DIR / "logs"          # 原始请求抓包存放(联调用)
 
 AGENT_TIMEOUT = float(os.environ.get("AGENT_TIMEOUT", "300"))   # 等 agent 回合结束的最长秒数
 POLL_INTERVAL = float(os.environ.get("POLL_INTERVAL", "2"))

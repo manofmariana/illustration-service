@@ -69,3 +69,11 @@ facade 同时注册了四条路径,网页端填哪个都行:
 - 注册在 `.kimi-code/mcp.json`,指向本仓库内的 `Booru-Pictag-Get-MCP/.venv` 可执行文件——随仓库走,换机器重新装依赖即可
 - **仅手动会话可用**:MCP 工具只在用户手动打开的会话中生效(会话启动时加载);自动流程(facade → kimi agent)由 skill 铁律 1 永久禁用 MCP,不会触发
 - 本目录不再注册 MCP 时,删除 `.kimi-code/mcp.json` 即可
+
+## ST(SillyTavern)专用服务
+
+与网页端 facade **完全隔离**:独立端口 8389、独立技能 `story-illustrator-st`、独立校验/渲染(`facade/st_*.py`)。
+
+- 启动:`run_st_facade.bat`
+- 输入:Chat Completions 请求(暂定取最长消息为剧情素材,**联调期原始请求会落盘 `logs/st-*.json`**,拿到真实抓包后细化 `st_extractor.py`)
+- 输出契约:`<images><image>regex:原文句子 / image###tags###</image>×N</images>`——与网页端契约互不可见,绝不混用

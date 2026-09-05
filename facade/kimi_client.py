@@ -38,8 +38,9 @@ class KimiClient:
             raise KimiError(f"kimi api code={body.get('code')} msg={body.get('msg')}")
         return body.get("data")
 
-    async def run_skill(self, args: str) -> str:
-        """跑一次 story-illustrator 技能,返回 agent 最终文本。失败抛 KimiError。"""
+    async def run_skill(self, args: str, skill_name: str | None = None) -> str:
+        """跑一次指定技能(默认 story-illustrator),返回 agent 最终文本。失败抛 KimiError。"""
+        skill_name = skill_name or config.SKILL_NAME
         data = await self._data(await self._client.post(
             "/api/v1/sessions", json={"metadata": {"cwd": config.SKILL_CWD}}
         ))
@@ -53,7 +54,7 @@ class KimiClient:
                 json={"agent_config": agent_config},
             ))
             await self._data(await self._client.post(
-                f"/api/v1/sessions/{sid}/skills/{config.SKILL_NAME}:activate",
+                f"/api/v1/sessions/{sid}/skills/{skill_name}:activate",
                 json={"args": args},
                 timeout=httpx.Timeout(60.0),
             ))
