@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from . import config
 
 STORY_OPEN = "<剧情原文>"
+CHARS_OPEN = "<可用绘图角色列表>"
+CHARS_CLOSE = "</可用绘图角色列表>"
 NEED_RE = re.compile(r"<用户需求>(.*?)</用户需求>", re.DOTALL)
 SETVAR_RE = re.compile(r"\{@setvar::生图数量::([\d\-~～]+)@\}")
 COUNT_RES = [
@@ -28,6 +30,7 @@ UNRENDERED_RE = re.compile(r"\{\{正文\}\}")
 class STInput:
     story: str         # 最新剧情原文(regex 校验基准)
     user_request: str  # 用户需求(可空)
+    characters: str    # <可用绘图角色列表> 内容(可空,角色 DNA/外观锚点)
     image_count: int
 
 
@@ -86,6 +89,14 @@ def extract(body: dict) -> STInput:
         if UNRENDERED_RE.search(story):
             raise ValueError("插件宏未渲染:请求中仍含 {{正文}}")
 
+    characters = ""
+    for t in texts:
+        if CHARS_OPEN in t:
+            i = t.find(CHARS_OPEN) + len(CHARS_OPEN)
+            j = t.find(CHARS_CLOSE, i)
+            characters = t[i:j if j > 0 else len(t)].strip()
+            break
+
     image_count = 0
     for t in texts:
         n = _parse_count(t)
@@ -95,12 +106,16 @@ def extract(body: dict) -> STInput:
     if not (1 <= image_count <= 6):
         image_count = 3  # 预设默认 3-4,取下限
 
-    return STInput(story=story, user_request=user_request, image_count=image_count)
+    return STInput(story=story, user_request=user_request,
+                   characters=characters, image_count=image_count)
 
 
 def build_skill_args(si: STInput) -> str:
     """组装传给 story-illustrator-st 的 args,与 ST 技能输入契约一致。"""
-    parts = ["[剧情与设定素材]\n" + si.story]
+    parts = []
+    if si.characters:
+        parts.append("[可用绘图角色列表]\n" + si.characters)
+    parts.append("[剧情与设定素材]\n" + si.story)
     if si.user_request:
         parts.append("[用户需求]\n" + si.user_request)
     parts.append(f"[图片数量 N]\n{si.image_count}")
