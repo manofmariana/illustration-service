@@ -72,8 +72,9 @@ facade 同时注册了四条路径,网页端填哪个都行:
 
 ## ST(SillyTavern)专用服务
 
-与网页端 facade **完全隔离**:独立端口 8389、独立技能 `story-illustrator-st`、独立校验/渲染(`facade/st_*.py`)。
+与网页端 facade **完全隔离**:独立端口 8389、独立技能 `story-illustrator-st`、独立提取/校验/渲染(`facade/st_*.py`)。
 
 - 启动:`run_st_facade.bat`
-- 输入:Chat Completions 请求(暂定取最长消息为剧情素材,**联调期原始请求会落盘 `logs/st-*.json`**,拿到真实抓包后细化 `st_extractor.py`)
-- 输出契约:`<images><image>regex:原文句子 / image###tags###</image>×N</images>`——与网页端契约互不可见,绝不混用
+- 输入:按 ST 生图预设(st_chatu8_all_test_contexts_new2.json)实证——从含 `<剧情原文>…<剧情原文>` 的消息切最新正文,同条消息 `<用户需求>` 取意图,`{@setvar::生图数量::…@}` 或「至少N张」读数量(区间取下限);联调期原始请求落盘 `logs/st-*.json`
+- 输出契约(与预设一致):`<images>` 包裹 N 个 `<image>`,每块 5 个子标签 `<regex>/<title_styled>/<Tag_think>/<size>/<prompts>`;不输出预设的越狱噪声(sāfe& 前缀、`<safe>`/`<sāfe&end>` 尾块)
+- 网页端契约(<anchor>/<prompt>)与 ST 契约互不可见,绝不混用

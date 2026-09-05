@@ -62,7 +62,7 @@ async def st_generate(req: Request):
         log.warning("ST 提取失败: %s", e)
         return _error(400, f"无法从请求中提取剧情素材: {e}")
 
-    log.info("收到 ST 生图请求: %d 张图, 素材 %d 字", si.image_count, len(si.material))
+    log.info("收到 ST 生图请求: %d 张图, 剧情 %d 字", si.image_count, len(si.story))
     args = st_extractor.build_skill_args(si)
 
     last_errors: list[str] = []
@@ -82,7 +82,7 @@ async def st_generate(req: Request):
             continue
 
         blocks = st_validator.parse_blocks(text)
-        last_errors = st_validator.validate(blocks, si.material, si.image_count)
+        last_errors = st_validator.validate(blocks, si.story, si.image_count)
         if not last_errors:
             final_text = st_validator.render(blocks)
             log.info("ST 完成: %.1fs, %d 块", time.time() - t0, len(blocks))

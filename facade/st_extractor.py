@@ -1,11 +1,10 @@
-"""SillyTavern 插件请求提取(暂定策略,待真实抓包后细化)。
+"""SillyTavern 插件请求提取(按 st_chatu8_all_test_contexts_new2.json 预设实证)。
 
-ST 侧没有网页端那样的固定锚点模板,注入内容由插件模板决定(通常是
-角色卡 + 世界书 + 最近若干楼对话 + 生图指令,混在 messages 里)。
-暂定策略:
-  1. 原始请求体落盘 logs/st/(联调期保留,方便按真实格式细化)
-  2. 取 input/messages 中最长的一条文本作为「剧情与设定素材」
-  3. 图片数量从常见表述中解析(固定输出 N 个 / N 张 / 生成 N),默认 1
+预设结构(184 entries × comfyui/nai 两变体,注入位置一致):
+  - 剧情正文:某条 user 消息内 `<剧情原文>…<剧情原文>`(作者笔误,闭合标签同形)
+  - 用户需求:同一条消息内 `<用户需求>…</用户需求>`
+  - 图片数量:entry0 `{@setvar::生图数量::3-4@}`(默认 3-4),或文中「至少N张」
+  - 噪声(忽略):<文生图_Tag库>/<文生图_Tag模板库>/{{roll}}/<宇宙法则>/assistant 假确认
 """
 import json
 import re
@@ -14,18 +13,21 @@ from dataclasses import dataclass
 
 from . import config
 
+STORY_OPEN = "<剧情原文>"
+NEED_RE = re.compile(r"<用户需求>(.*?)</用户需求>", re.DOTALL)
+SETVAR_RE = re.compile(r"\{@setvar::生图数量::([\d\-~～]+)@\}")
 COUNT_RES = [
-    re.compile(r"固定输出\s*(\d+)\s*个"),
+    re.compile(r"至少\s*(\d+)\s*张"),
+    re.compile(r"(\d+)\s*[-~～]\s*(\d+)\s*张"),
     re.compile(r"(\d+)\s*张"),
-    re.compile(r"生成\s*(\d+)"),
-    re.compile(r"输出\s*(\d+)\s*个"),
-    re.compile(r"<\s*image\s*>?\s*[x×*]?\s*(\d+)", re.IGNORECASE),
 ]
+UNRENDERED_RE = re.compile(r"\{\{正文\}\}")
 
 
 @dataclass
 class STInput:
-    material: str     # 剧情与设定素材(角色/场景/正文混合,由 skill 自建台账)
+    story: str         # 最新剧情原文(regex 校验基准)
+    user_request: str  # 用户需求(可空)
     image_count: int
 
 
@@ -38,31 +40,68 @@ def _dump_request(body: dict) -> None:
         pass  # 落盘失败不影响主流程
 
 
-def extract(body: dict) -> STInput:
-    _dump_request(body)
-    messages = body.get("input") or body.get("messages") or []
-    best = ""
-    for msg in messages:
+def _iter_texts(body: dict):
+    for msg in body.get("input") or body.get("messages") or []:
         content = msg.get("content") if isinstance(msg, dict) else None
         if isinstance(content, list):
             content = "".join(p.get("text", "") for p in content if isinstance(p, dict))
-        if isinstance(content, str) and len(content) > len(best):
-            best = content
-    if not best.strip():
+        if isinstance(content, str):
+            yield content
+
+
+def _parse_count(text: str) -> int | None:
+    m = SETVAR_RE.search(text)
+    if m:
+        nums = re.findall(r"\d+", m.group(1))
+        if nums:
+            return int(nums[0])  # 区间取下限(速度优先)
+    for rx in COUNT_RES:
+        m = rx.search(text)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def extract(body: dict) -> STInput:
+    _dump_request(body)
+    texts = list(_iter_texts(body))
+    if not texts:
         raise ValueError("messages 中没有可用文本内容")
 
-    image_count = 1
-    for rx in COUNT_RES:
-        m = rx.search(best)
-        if m and 0 < int(m.group(1)) <= 6:
-            image_count = int(m.group(1))
+    story = user_request = ""
+    for t in texts:
+        if STORY_OPEN in t:
+            if UNRENDERED_RE.search(t):
+                raise ValueError("插件宏未渲染:请求中仍含 {{正文}},请检查插件变量替换")
+            i = t.find(STORY_OPEN) + len(STORY_OPEN)
+            j = t.find(STORY_OPEN, i)  # 闭合标签与开放标签同形(预设笔误),按第二次出现切
+            story = t[i:j if j > 0 else len(t)].strip()
+            m = NEED_RE.search(t)
+            if m:
+                user_request = m.group(1).strip()
             break
-    return STInput(material=best.strip(), image_count=image_count)
+
+    if not story:  # 兜底:无预设标记时取最长消息(手动测试/其他插件)
+        story = max(texts, key=len).strip()
+        if UNRENDERED_RE.search(story):
+            raise ValueError("插件宏未渲染:请求中仍含 {{正文}}")
+
+    image_count = 0
+    for t in texts:
+        n = _parse_count(t)
+        if n:
+            image_count = n
+            break
+    if not (1 <= image_count <= 6):
+        image_count = 3  # 预设默认 3-4,取下限
+
+    return STInput(story=story, user_request=user_request, image_count=image_count)
 
 
 def build_skill_args(si: STInput) -> str:
     """组装传给 story-illustrator-st 的 args,与 ST 技能输入契约一致。"""
-    return (
-        "[剧情与设定素材]\n" + si.material + "\n\n"
-        f"[图片数量 N]\n{si.image_count}"
-    )
+    parts = ["[剧情与设定素材]\n" + si.story]
+    if si.user_request:
+        parts.append("[用户需求]\n" + si.user_request)
+    parts.append(f"[图片数量 N]\n{si.image_count}")
+    return "\n\n".join(parts)
