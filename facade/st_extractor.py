@@ -16,6 +16,9 @@ from . import config
 STORY_OPEN = "<剧情原文>"
 CHARS_OPEN = "<可用绘图角色列表>"
 CHARS_CLOSE = "</可用绘图角色列表>"
+HIST_OPEN = "<历史前文>"
+HIST_CLOSE = "</历史前文>"
+HIST_MAX = 4000  # 历史+世界书只取末尾一段(最近的上下文最相关),防止素材过长拖慢 agent
 NEED_RE = re.compile(r"<用户需求>(.*?)</用户需求>", re.DOTALL)
 SETVAR_RE = re.compile(r"\{@setvar::生图数量::([\d\-~～]+)@\}")
 COUNT_RES = [
@@ -31,6 +34,7 @@ class STInput:
     story: str         # 最新剧情原文(regex 校验基准)
     user_request: str  # 用户需求(可空)
     characters: str    # <可用绘图角色列表> 内容(可空,角色 DNA/外观锚点)
+    history: str       # <历史前文> 内容(可空,聊天历史+世界书条目,仅背景参考)
     image_count: int
 
 
@@ -97,6 +101,18 @@ def extract(body: dict) -> STInput:
             characters = t[i:j if j > 0 else len(t)].strip()
             break
 
+    history = ""
+    for t in texts:
+        if HIST_OPEN in t:
+            i = t.find(HIST_OPEN) + len(HIST_OPEN)
+            j = t.find(HIST_CLOSE, i)
+            history = t[i:j if j > 0 else len(t)].strip()
+            if "{{上下文}}" in history and len(history) < 100:
+                history = ""  # 宏未渲染且没有实际内容
+            elif len(history) > HIST_MAX:
+                history = "……(前文略)\n" + history[-HIST_MAX:]
+            break
+
     image_count = 0
     for t in texts:
         n = _parse_count(t)
@@ -107,7 +123,7 @@ def extract(body: dict) -> STInput:
         image_count = 3  # 预设默认 3-4,取下限
 
     return STInput(story=story, user_request=user_request,
-                   characters=characters, image_count=image_count)
+                   characters=characters, history=history, image_count=image_count)
 
 
 def build_skill_args(si: STInput) -> str:
@@ -115,6 +131,8 @@ def build_skill_args(si: STInput) -> str:
     parts = []
     if si.characters:
         parts.append("[可用绘图角色列表]\n" + si.characters)
+    if si.history:
+        parts.append("[历史前文与世界书]\n" + si.history)
     parts.append("[剧情与设定素材]\n" + si.story)
     if si.user_request:
         parts.append("[用户需求]\n" + si.user_request)
