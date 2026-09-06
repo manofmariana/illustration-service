@@ -1,7 +1,7 @@
 ## 13. DETAIL & MOOD
 
 > 对应槽位：`[detail/mood]`
-> 画面「看起来像什么」和「给人什么感觉」——不包含场景地点（§12）和镜头（§11）。灯光/光影/色调禁止输出（lora已内置），仅允许以下非光影的氛围与特效标签。
+> 画面「看起来像什么」和「给人什么感觉」——不包含场景地点（§12）和镜头（§11）。光影基调见 §13.5（每张图必写 1 个）。
 
 ### 13.1 运动渲染
 
@@ -43,7 +43,7 @@
 
 ### 13.4 氛围基调
 
-非光线的纯情绪氛围词，给画面定情绪基调。
+情绪氛围词，给画面定情绪基调。
 
 | 类型 | 核心标签 | 适用场景 |
 |---|---|---|
@@ -57,19 +57,22 @@
 
 **使用规则**：氛围词只选1个，它是全局情绪基调。`cinematic` + `ethereal` 可以（史诗空灵），`dark atmosphere` + `poetic` 矛盾。
 
-### 13.5 禁止输出清单
+### 13.5 光影基调(每张图必写 1 个)
 
-> ⚠️ 以下类型标签绝对禁止出现在 prompt 中（lora已内置光影效果，违者画面将被强光源污染）：
+> 光影词不再禁止——**每张图必须**在 detail/mood 槽带 1 个光影基调词,与场景时辰/情绪一致;同类不堆砌(光源 1 个,技术/色调最多再各带 1 个)。
 
-| 禁止类型 | 示例标签 |
-|---|---|
-| 光线描述 | `sunlight, moonlight, dim light, candlelight, neon light, neon lights, streetlights` |
-| 光影技术 | `backlighting, rim light, warm lighting, cool lighting, golden hour glow, soft lighting` |
-| 色调描述 | `warm tone, cool tone, sepia, blue tone, amber tone` |
-| 光学现象 | `god rays, light rays, light particles, volumetric light beams, tyndall effect` |
-| 发光描述 | `glowing, illuminated, lit, backlit, spotlight, flash` |
+| 类别 | 可用 tag | 适用 |
+|---|---|---|
+| 自然光源 | `sunlight, moonlight, dim light` | 按 §12.3 时辰选,白天/夜晚/昏暗 |
+| 人工光源 | `candlelight, neon lights, streetlights, spotlight` | 古风室内/都市夜/街道/舞台 |
+| 光影技术 | `backlighting, rim light, soft lighting, golden hour glow` | 逆光剪影/轮廓光/柔和/黄昏 |
+| 色调 | `warm tone, cool tone, sepia, blue tone, amber tone` | 暖情/冷艳/怀旧/夜蓝/琥珀 |
+| 光学现象(慎用,最多 1 个) | `god rays, light particles, volumetric light beams` | 神圣/梦幻/尘埃光柱 |
+| 发光(仅剧情有光源物时) | `glowing, illuminated, backlit, flash` | 法宝发光/闪电/强曝光 |
 
-> **允许**：环境天气描写（`rain, snow, fog, steam, stormy, dust particles, underwater`）和 §12.3 中的时辰/大气标签。
+**搭配约束**:光影基调必须与世界风格锚定(§12.0)和时辰一致——古风室内 `candlelight`、赛博夜 `neon lights`、修仙雪山 `moonlight`;不允许 `candlelight` + `neon lights` 这类跨世界观混搭(见 slot-order §4.1)。
+
+> 环境天气描写(`rain, snow, fog, steam, stormy, dust particles, underwater`)照旧允许,与光影基调可叠加。
 
 ---
 
