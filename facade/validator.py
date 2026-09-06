@@ -55,8 +55,10 @@ def validate(blocks: list[ImageBlock], story: str, expected: int) -> list[str]:
 
 
 def render(blocks: list[ImageBlock]) -> str:
-    """校验通过后渲染为最终返回文本(网页端契约格式)。"""
+    """校验通过后渲染为最终返回文本(网页端契约格式)。
+    prompt 中下划线统一替换为空格:danbooru 式 new_jersey_(azur_lane) 生图模型无法辨认,
+    new jersey (azur lane) 才能正常命中。"""
     return "\n\n".join(
-        f"<image>\n<anchor>{b.anchor}</anchor>\n<prompt>{b.prompt}</prompt>\n</image>"
+        f"<image>\n<anchor>{b.anchor}</anchor>\n<prompt>{b.prompt.replace('_', ' ')}</prompt>\n</image>"
         for b in blocks
     )

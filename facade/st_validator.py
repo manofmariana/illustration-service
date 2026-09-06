@@ -93,13 +93,14 @@ def validate(blocks: list[STBlock], story: str, expected: int) -> list[str]:
 
 
 def render(blocks: list[STBlock]) -> str:
+    """prompts 中下划线统一替换为空格(同网页端:danbooru 下划线 tag 生图模型无法辨认)。"""
     inner = "\n\n".join(
         "<image>\n"
         f"<regex>{b.regex}</regex>\n"
         f"<title_styled>{b.title}</title_styled>\n"
         f"<Tag_think>{b.think}</Tag_think>\n"
         f"<size>{b.size}</size>\n"
-        f"<prompts>{b.prompts}</prompts>\n"
+        f"<prompts>{b.prompts.replace('_', ' ')}</prompts>\n"
         "</image>"
         for b in blocks
     )

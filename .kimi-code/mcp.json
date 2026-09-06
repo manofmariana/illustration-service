@@ -1,7 +1,8 @@
 {
   "mcpServers": {
     "booru-pictag-get": {
-      "command": "D:\\ComfyUI_windows_portable\\illustration-service\\Booru-Pictag-Get-MCP\\.venv\\Scripts\\booru-pictag-get-mcp.exe",
+      "command": "D:\\ComfyUI_windows_portable\\illustration-service\\Booru-Pictag-Get-MCP\\.venv\\Scripts\\python.exe",
+      "args": ["-c", "from booru_pictag_get_mcp.server import main; main()"],
       "env": {
         "BOORU_DEFAULT_PROVIDER": "danbooru"
       }
