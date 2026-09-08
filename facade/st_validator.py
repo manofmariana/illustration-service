@@ -6,7 +6,7 @@
   <regex>正文原句(单行)</regex>
   <title_styled>图片标题,5-15字中文</title_styled>
   <Tag_think>60-100字剧情浓缩,仅视觉可见元素</Tag_think>
-  <size>832x1216|1216x832|1024x1024</size>
+  <size>1024x1536|1536x1024|1280x1280</size>
   <prompts>英文tag,逗号分隔</prompts>
   </image>
   ...

@@ -1,10 +1,10 @@
 """ST(SillyTavern)专用伪装服务:与网页端 facade 完全隔离。
 
 POST /v1/chat/completions(:8389)
-  → st_extractor 切分素材(暂定策略,原始请求落盘 logs/st/)
+  → st_extractor 切分素材(按 ST 预设锚点,原始请求落盘 logs/st/)
   → kimi_client 驱动 story-illustrator-st 技能(带校验重试)
   → st_validator 硬校验(ST 契约)
-  → 渲染 <images><image>regex:/image###tags###</image></images> 返回
+  → 渲染 <images><image><regex>/<title_styled>/<Tag_think>/<size>/<prompts></image></images> 返回
 """
 import json
 import logging
