@@ -65,6 +65,7 @@ whenToUse: 由 illustration-service facade 通过 REST 激活,处理正文插图
 ### 第 5 步:场景分类
 - 打开 `rules/decision-tree.md`,匹配场景类型(单人展示/双人前戏/双人正戏/多人/百合/特殊体位/特殊主题),获取槽位侧重与镜头推荐
 - 命中特殊主题(NTR/束缚/调教/胁迫/偷窥等 12 类)→ 先 Grep `tags/14-special-theme.md` 对应小节取跨槽位配方
+- **土下座固定规则(调教/臣服类跪伏场景)**:画面**不出现男性角色**(含男性局部脚部/手部),一律女性单人构图;视角固定二选一——`from above` 俯视(默认)或 `from side` / `from behind` 侧后方,禁止其他视角;男性存在感只通过镜头方向暗示,不入镜
 - **NSFW 必要环节**:凡是 NSFW 瞬间,必须按 `tags/15-nsfx-symbols.md` 补爱心符号 tag(至少 1 个,优先 `heart`)与拟声词 tag(`sound_effects` 系至少 1 个,静谧场景可豁免拟声词);具体拟声词 romaji 拼写不是 tag,一律 `sound_effects` + 自然语言描述
 
 ### 第 6 步:逐槽位组装
@@ -76,7 +77,7 @@ whenToUse: 由 illustration-service facade 通过 REST 激活,处理正文插图
 - **复杂互动/人数 > 2 时的构图策略**:优先采用**男性第一视角**(`pov` 系,见 `tags/11` §11.3),男性只露手/胯/腿局部(`pov hands`/`pov crotch`),不画完整男性全身——把视觉重心让给女性角色,同时减少男性描写造成的特征污染与构图混乱
 
 ### 第 7 步:自检
-- 打开 `rules/conflict-check.md`,过 6 项自检 + 互斥表;有冲突回退修改
+- 打开 `rules/conflict-check.md`,过 7 项自检 + 互斥表;有冲突回退修改
 - 再验 anchor:心里默查能否在正文逐字命中,不能就重选
 
 ### 第 8 步:输出
