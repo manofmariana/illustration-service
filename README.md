@@ -54,7 +54,7 @@ facade 同时注册了四条路径,网页端填哪个都行:
 |---|---|---|
 | `KIMI_BASE_URL` | `http://127.0.0.1:58627` | kimi web 地址 |
 | `KIMI_TOKEN` | 读 `~/.kimi-code/server.token` | kimi web bearer token |
-| `KIMI_MODEL` | `Deepseek/deepseek-v4-flash-vision-exp` | agent 会话使用的模型别名(须与 `kimi provider list` 里的 alias key 精确一致;设为空字符串则用全局默认) |
+| `KIMI_MODEL` | `Deepseek/deepseek-v4.1-flash-expires-on-0910` | agent 会话使用的模型别名(须与 `kimi provider list` 里的 alias key 精确一致;设为空字符串则用全局默认) |
 | `FACADE_PORT` | `8388` | facade 监听端口 |
 | `AGENT_TIMEOUT` | `300` | 等 agent 回合结束的秒数 |
 | `MAX_RETRIES` | `1` | 校验失败重试次数 |

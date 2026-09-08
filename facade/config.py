@@ -10,7 +10,7 @@ KIMI_BASE_URL = os.environ.get("KIMI_BASE_URL", "http://127.0.0.1:58627")
 KIMI_TOKEN = os.environ.get("KIMI_TOKEN", "")              # 留空则读 ~/.kimi-code/server.token
 KIMI_TOKEN_FILE = Path.home() / ".kimi-code" / "server.token"
 # kimi config.toml 里配置的模型别名(精确 alias key);留空则用全局 default_model
-KIMI_MODEL = os.environ.get("KIMI_MODEL", "Deepseek/deepseek-v4-flash-vision-exp")
+KIMI_MODEL = os.environ.get("KIMI_MODEL", "Deepseek/deepseek-v4.1-flash-expires-on-0910")
 
 FACADE_HOST = os.environ.get("FACADE_HOST", "0.0.0.0")
 FACADE_PORT = int(os.environ.get("FACADE_PORT", "8388"))
