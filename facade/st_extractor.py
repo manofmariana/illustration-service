@@ -125,10 +125,6 @@ def extract(body: dict) -> STInput:
             history = _strip_hidden(t[i:j if j > 0 else len(t)])
             if "{{上下文}}" in history and len(history) < 100:
                 history = ""  # 宏未渲染且没有实际内容
-            elif len(history) > config.ST_HISTORY_MAX:
-                # 保留首尾:世界书等设定通常在头部,最近上下文在尾部,中段牺牲
-                head = config.ST_HISTORY_MAX // 3
-                history = history[:head] + "\n……(中段略)……\n" + history[-(config.ST_HISTORY_MAX - head):]
             break
 
     image_count = 0
