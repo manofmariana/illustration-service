@@ -17,6 +17,8 @@ FACADE_PORT = int(os.environ.get("FACADE_PORT", "8388"))
 # SillyTavern 专用隔离服务(输出契约与网页端完全不同,互不混用)
 ST_SKILL_NAME = "story-illustrator-st"
 ST_PORT = int(os.environ.get("ST_PORT", "8389"))
+# 历史前文+世界书的长度上限(字符);世界书动辄上万字,截断时保留首尾(世界书在前、近况在后)
+ST_HISTORY_MAX = int(os.environ.get("ST_HISTORY_MAX", "30000"))
 LOG_DIR = BASE_DIR / "logs"          # 原始请求抓包存放(联调用)
 
 AGENT_TIMEOUT = float(os.environ.get("AGENT_TIMEOUT", "300"))   # 等 agent 回合结束的最长秒数

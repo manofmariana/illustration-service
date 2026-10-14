@@ -19,7 +19,6 @@ CHARS_OPEN = "<可用绘图角色列表>"
 CHARS_CLOSE = "</可用绘图角色列表>"
 HIST_OPEN = "<历史前文>"
 HIST_CLOSE = "</历史前文>"
-HIST_MAX = 4000  # 历史+世界书只取末尾一段(最近的上下文最相关),防止素材过长拖慢 agent
 NEED_RE = re.compile(r"<用户需求>(.*?)</用户需求>", re.DOTALL)
 SETVAR_RE = re.compile(r"\{@setvar::生图数量::([\d\-~～]+)@\}")
 COUNT_RES = [
@@ -126,8 +125,10 @@ def extract(body: dict) -> STInput:
             history = _strip_hidden(t[i:j if j > 0 else len(t)])
             if "{{上下文}}" in history and len(history) < 100:
                 history = ""  # 宏未渲染且没有实际内容
-            elif len(history) > HIST_MAX:
-                history = "……(前文略)\n" + history[-HIST_MAX:]
+            elif len(history) > config.ST_HISTORY_MAX:
+                # 保留首尾:世界书等设定通常在头部,最近上下文在尾部,中段牺牲
+                head = config.ST_HISTORY_MAX // 3
+                history = history[:head] + "\n……(中段略)……\n" + history[-(config.ST_HISTORY_MAX - head):]
             break
 
     image_count = 0
