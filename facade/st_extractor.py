@@ -5,6 +5,7 @@
   - 用户需求:同一条消息内 `<用户需求>…</用户需求>`
   - 图片数量:entry0 `{@setvar::生图数量::3-4@}`(默认 3-4),或文中「至少N张」
   - 噪声(忽略):<文生图_Tag库>/<文生图_Tag模板库>/{{roll}}/<宇宙法则>/assistant 假确认
+  - 隐藏(剥离):正文/历史中注入的 <think>/<thinking>/<update>/<summary> 块
 """
 import json
 import re
@@ -27,6 +28,22 @@ COUNT_RES = [
     re.compile(r"(\d+)\s*张"),
 ]
 UNRENDERED_RE = re.compile(r"\{\{正文\}\}")
+
+# 酒馆正文/历史中常注入的思维链与摘要块,对生图素材隐藏
+HIDDEN_BLOCK_RE = re.compile(
+    r"<(think|thinking|update|summary)\b[^>]*>.*?</\1\s*>",
+    re.IGNORECASE | re.DOTALL,
+)
+HIDDEN_OPEN_RE = re.compile(
+    r"<(think|thinking|update|summary)\b[^>]*>.*$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _strip_hidden(text: str) -> str:
+    """剥离 <think>/<thinking>/<update>/<summary> 包裹的内容;未闭合时剥到末尾(流式截断)。"""
+    text = HIDDEN_BLOCK_RE.sub("", text)
+    return HIDDEN_OPEN_RE.sub("", text).strip()
 
 
 @dataclass
@@ -82,14 +99,14 @@ def extract(body: dict) -> STInput:
                 raise ValueError("插件宏未渲染:请求中仍含 {{正文}},请检查插件变量替换")
             i = t.find(STORY_OPEN) + len(STORY_OPEN)
             j = t.find(STORY_OPEN, i)  # 闭合标签与开放标签同形(预设笔误),按第二次出现切
-            story = t[i:j if j > 0 else len(t)].strip()
+            story = _strip_hidden(t[i:j if j > 0 else len(t)])
             m = NEED_RE.search(t)
             if m:
                 user_request = m.group(1).strip()
             break
 
     if not story:  # 兜底:无预设标记时取最长消息(手动测试/其他插件)
-        story = max(texts, key=len).strip()
+        story = _strip_hidden(max(texts, key=len))
         if UNRENDERED_RE.search(story):
             raise ValueError("插件宏未渲染:请求中仍含 {{正文}}")
 
@@ -106,7 +123,7 @@ def extract(body: dict) -> STInput:
         if HIST_OPEN in t:
             i = t.find(HIST_OPEN) + len(HIST_OPEN)
             j = t.find(HIST_CLOSE, i)
-            history = t[i:j if j > 0 else len(t)].strip()
+            history = _strip_hidden(t[i:j if j > 0 else len(t)])
             if "{{上下文}}" in history and len(history) < 100:
                 history = ""  # 宏未渲染且没有实际内容
             elif len(history) > HIST_MAX:
