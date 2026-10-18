@@ -12,7 +12,8 @@ SHARED_MCP_JSON = BASE_DIR / ".kimi-code" / "mcp.json"
 KIMI_BASE_URL = os.environ.get("KIMI_BASE_URL", "http://127.0.0.1:58627")
 KIMI_TOKEN = os.environ.get("KIMI_TOKEN", "")              # 留空则读 ~/.kimi-code/server.token
 KIMI_TOKEN_FILE = Path.home() / ".kimi-code" / "server.token"
-# kimi config.toml 里配置的模型别名(精确 alias key);留空则用全局 default_model
+# kimi config.toml 里配置的模型别名(精确 alias key);留空则用全局 default_model。
+# 注意:这是作者自己配置里的别名,别人的机器上通常没有,用 KimiCode 前请改成自己的。
 KIMI_MODEL = os.environ.get("KIMI_MODEL", "Deepseek/deepseek-flash")
 
 # 网关:一条进程服务全部模式,按路径前缀或 model 字段选择
@@ -22,8 +23,9 @@ DEFAULT_MODE = os.environ.get("DEFAULT_MODE", "anima")
 # 管理页/设置接口默认只允许本机访问(局域网里只能生图,不能改 key)
 ALLOW_REMOTE_ADMIN = os.environ.get("ALLOW_REMOTE_ADMIN", "0") == "1"
 
-# 后端选择:kimi | dsh(环境变量给默认值,网页里的设置优先)
-AGENT_BACKEND = os.environ.get("AGENT_BACKEND", "kimi")
+# 后端选择:kimi | dsh(环境变量给默认值,网页里的设置优先)。
+# 默认 dsh:它只要一个 API key;kimi 依赖本机常驻的 kimi web 与个人模型别名。
+AGENT_BACKEND = os.environ.get("AGENT_BACKEND", "dsh")
 
 # DSH 一次性任务入口。用 exe + cli.js 直接启动,绕开 dsh.cmd 的引号问题。
 DSH_ROOT = Path(os.environ.get("DSH_ROOT", r"D:\DeepSeek Harness"))

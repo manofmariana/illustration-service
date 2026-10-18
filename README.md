@@ -178,7 +178,7 @@ JSON VALID: NO -> Expecting ',' delimiter
 |---|---|---|
 | `GATEWAY_PORT` | `8388` | 监听端口 |
 | `DEFAULT_MODE` | `anima` | 不带前缀时走哪条分支（管理页保存的值优先） |
-| `AGENT_BACKEND` | `kimi` | 全局后端；`AGENT_BACKEND_<MODE>` 可按模式覆盖 |
+| `AGENT_BACKEND` | `dsh` | 全局后端；`AGENT_BACKEND_<MODE>` 可按模式覆盖 |
 | `MAX_RETRIES` | `1` | 校验失败后的重写次数 |
 | `AGENT_TIMEOUT` | `300` | 等 KimiCode 回合结束的秒数 |
 | `DEEPSEEK_API_KEY` | — | DSH 的兜底 key |
