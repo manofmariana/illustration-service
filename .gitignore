@@ -12,3 +12,6 @@ facade_test_response.txt
 
 # 联调抓包落盘
 logs/
+
+# 本地运行时设置(含 API key,绝不入库)
+instance/

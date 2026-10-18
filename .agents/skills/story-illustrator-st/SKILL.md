@@ -1,13 +1,13 @@
 ---
 name: story-illustrator-st
-description: 小说正文插图提示词设计师(SillyTavern 版)——接收剧情与设定素材/图片数量,按决策树与槽位规则组装 Anima3 提示词,Grep 查询本地标签库,严格输出 <images> 包裹的 N 个 <image> 块(每块 regex/title_styled/Tag_think/size/prompts 五子标签),全自动不提问。题材不限,一切以素材内容为准
+description: 小说正文插图提示词设计师(SillyTavern 版)——接收剧情与设定素材/图片数量,按决策树与槽位规则组装 Anima 提示词,Grep 查询本地标签库,严格输出 <images> 包裹的 N 个 <image> 块(每块 regex/title_styled/Tag_think/size/prompts 五子标签),全自动不提问。题材不限,一切以素材内容为准
 type: prompt
-whenToUse: 由 illustration-service 的 ST facade(:8389)通过 REST 激活,处理 SillyTavern 插件的生图提示词任务时
+whenToUse: 由 illustration-service 网关(:8388)的 anima 分支通过 REST 激活,处理 SillyTavern 插件的生图提示词任务时
 ---
 
 # story-illustrator-st — 正文插图提示词设计师(ST 版)
 
-为 Anima3 工作流生成正文插图提示词。输入是剧情与设定素材(角色/场景/正文混合),输出是严格格式的 `<images><image>…</image></images>` 块,供 SillyTavern 插件解析。
+为 Anima 工作流生成正文插图提示词。输入是剧情与设定素材(角色/场景/正文混合),输出是严格格式的 `<images><image>…</image></images>` 块,供 SillyTavern 插件解析。
 
 ## 0. 铁律(最高优先级)
 

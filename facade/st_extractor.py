@@ -1,11 +1,15 @@
-"""SillyTavern 插件请求提取(按 st_chatu8_all_test_contexts_new2.json 预设实证)。
+"""SillyTavern 请求提取。
 
-预设结构(184 entries × comfyui/nai 两变体,注入位置一致):
-  - 剧情正文:某条 user 消息内 `<剧情原文>…<剧情原文>`(作者笔误,闭合标签同形)
-  - 用户需求:同一条消息内 `<用户需求>…</用户需求>`
-  - 图片数量:entry0 `{@setvar::生图数量::3-4@}`(默认 3-4),或文中「至少N张」
-  - 噪声(忽略):<文生图_Tag库>/<文生图_Tag模板库>/{{roll}}/<宇宙法则>/assistant 假确认
-  - 隐藏(剥离):正文/历史中注入的 <think>/<thinking>/<update>/<summary> 块
+预设(ComfyUI Agent生图)把每段素材放进独立标签、各自一条消息,直接按标签取:
+
+    <生图数量> 2 </生图数量>
+    <世界书条目> … </世界书条目>
+    <可用绘图角色列表> … </可用绘图角色列表>
+    <历史前文> … </历史前文>
+    <剧情原文> {{正文}} <剧情原文>      ← 闭合标签与开标签同形,取第二次出现
+    <用户需求> … </用户需求>
+
+旧预设的 `{@setvar::生图数量::3-4@}` / 「至少N张」仍作兜底。
 """
 import json
 import re
@@ -14,12 +18,14 @@ from dataclasses import dataclass
 
 from . import config
 
-STORY_OPEN = "<剧情原文>"
-CHARS_OPEN = "<可用绘图角色列表>"
-CHARS_CLOSE = "</可用绘图角色列表>"
-HIST_OPEN = "<历史前文>"
-HIST_CLOSE = "</历史前文>"
-NEED_RE = re.compile(r"<用户需求>(.*?)</用户需求>", re.DOTALL)
+STORY = "剧情原文"
+USER_REQUEST = "用户需求"
+CHARACTERS = "可用绘图角色列表"
+HISTORY = "历史前文"
+WORLDBOOK = "世界书条目"
+COUNT = "生图数量"
+
+DEFAULT_IMAGE_COUNT = 2
 SETVAR_RE = re.compile(r"\{@setvar::生图数量::([\d\-~～]+)@\}")
 COUNT_RES = [
     re.compile(r"至少\s*(\d+)\s*张"),
@@ -27,6 +33,7 @@ COUNT_RES = [
     re.compile(r"(\d+)\s*张"),
 ]
 UNRENDERED_RE = re.compile(r"\{\{正文\}\}")
+MACRO_ONLY_RE = re.compile(r"^\{\{[^{}]*\}\}$")
 
 # 酒馆正文/历史中常注入的思维链与摘要块,对生图素材隐藏
 HIDDEN_BLOCK_RE = re.compile(
@@ -39,19 +46,20 @@ HIDDEN_OPEN_RE = re.compile(
 )
 
 
-def _strip_hidden(text: str) -> str:
-    """剥离 <think>/<thinking>/<update>/<summary> 包裹的内容;未闭合时剥到末尾(流式截断)。"""
-    text = HIDDEN_BLOCK_RE.sub("", text)
-    return HIDDEN_OPEN_RE.sub("", text).strip()
-
-
 @dataclass
 class STInput:
     story: str         # 最新剧情原文(regex 校验基准)
     user_request: str  # 用户需求(可空)
-    characters: str    # <可用绘图角色列表> 内容(可空,角色 DNA/外观锚点)
-    history: str       # <历史前文> 内容(可空,聊天历史+世界书条目,仅背景参考)
+    characters: str    # <可用绘图角色列表>(可空,角色 DNA/外观锚点)
+    history: str       # <历史前文>(可空,聊天历史)
+    worldbook: str     # <世界书条目>(可空)
     image_count: int
+
+
+def _strip_hidden(text: str) -> str:
+    """剥离 <think>/<thinking>/<update>/<summary> 包裹的内容;未闭合时剥到末尾(流式截断)。"""
+    text = HIDDEN_BLOCK_RE.sub("", text)
+    return HIDDEN_OPEN_RE.sub("", text).strip()
 
 
 def _dump_request(body: dict) -> None:
@@ -72,16 +80,38 @@ def _iter_texts(body: dict):
             yield content
 
 
-def _parse_count(text: str) -> int | None:
-    m = SETVAR_RE.search(text)
-    if m:
-        nums = re.findall(r"\d+", m.group(1))
+def _tag_content(texts: list[str], tag: str) -> str:
+    """取第一个能匹配到的标签内容;闭合标签缺失时用同名标签当闭合(预设的剧情原文写法)。"""
+    open_tag, close_tag = f"<{tag}>", f"</{tag}>"
+    for text in texts:
+        start = text.find(open_tag)
+        if start < 0:
+            continue
+        start += len(open_tag)
+        end = text.find(close_tag, start)
+        if end < 0:
+            end = text.find(open_tag, start)
+        content = text[start:end if end > 0 else len(text)].strip()
+        return "" if MACRO_ONLY_RE.match(content) else content
+    return ""
+
+
+def _parse_count(texts: list[str]) -> int | None:
+    raw = _tag_content(texts, COUNT)
+    if raw:
+        nums = re.findall(r"\d+", raw)
         if nums:
             return int(nums[0])  # 区间取下限(速度优先)
-    for rx in COUNT_RES:
-        m = rx.search(text)
-        if m:
-            return int(m.group(1))
+    for text in texts:
+        match = SETVAR_RE.search(text)
+        if match:
+            nums = re.findall(r"\d+", match.group(1))
+            if nums:
+                return int(nums[0])
+        for pattern in COUNT_RES:
+            match = pattern.search(text)
+            if match:
+                return int(match.group(1))
     return None
 
 
@@ -90,63 +120,35 @@ def extract(body: dict) -> STInput:
     texts = list(_iter_texts(body))
     if not texts:
         raise ValueError("messages 中没有可用文本内容")
+    if any(UNRENDERED_RE.search(t) for t in texts):
+        raise ValueError("插件宏未渲染:请求中仍含 {{正文}},请检查插件变量替换")
 
-    story = user_request = ""
-    for t in texts:
-        if STORY_OPEN in t:
-            if UNRENDERED_RE.search(t):
-                raise ValueError("插件宏未渲染:请求中仍含 {{正文}},请检查插件变量替换")
-            i = t.find(STORY_OPEN) + len(STORY_OPEN)
-            j = t.find(STORY_OPEN, i)  # 闭合标签与开放标签同形(预设笔误),按第二次出现切
-            story = _strip_hidden(t[i:j if j > 0 else len(t)])
-            m = NEED_RE.search(t)
-            if m:
-                user_request = m.group(1).strip()
-            break
-
-    if not story:  # 兜底:无预设标记时取最长消息(手动测试/其他插件)
+    story = _strip_hidden(_tag_content(texts, STORY))
+    if not story:  # 兜底:无预设标记时取最长消息(手动测试/其他预设)
         story = _strip_hidden(max(texts, key=len))
-        if UNRENDERED_RE.search(story):
-            raise ValueError("插件宏未渲染:请求中仍含 {{正文}}")
 
-    characters = ""
-    for t in texts:
-        if CHARS_OPEN in t:
-            i = t.find(CHARS_OPEN) + len(CHARS_OPEN)
-            j = t.find(CHARS_CLOSE, i)
-            characters = t[i:j if j > 0 else len(t)].strip()
-            break
+    image_count = _parse_count(texts)
+    if image_count is None or not (1 <= image_count <= 6):
+        image_count = DEFAULT_IMAGE_COUNT
 
-    history = ""
-    for t in texts:
-        if HIST_OPEN in t:
-            i = t.find(HIST_OPEN) + len(HIST_OPEN)
-            j = t.find(HIST_CLOSE, i)
-            history = _strip_hidden(t[i:j if j > 0 else len(t)])
-            if "{{上下文}}" in history and len(history) < 100:
-                history = ""  # 宏未渲染且没有实际内容
-            break
-
-    image_count = 0
-    for t in texts:
-        n = _parse_count(t)
-        if n:
-            image_count = n
-            break
-    if not (1 <= image_count <= 6):
-        image_count = 3  # 预设默认 3-4,取下限
-
-    return STInput(story=story, user_request=user_request,
-                   characters=characters, history=history, image_count=image_count)
+    return STInput(
+        story=story,
+        user_request=_tag_content(texts, USER_REQUEST),
+        characters=_tag_content(texts, CHARACTERS),
+        history=_strip_hidden(_tag_content(texts, HISTORY)),
+        worldbook=_strip_hidden(_tag_content(texts, WORLDBOOK)),
+        image_count=image_count,
+    )
 
 
 def build_skill_args(si: STInput) -> str:
-    """组装传给 story-illustrator-st 的 args,与 ST 技能输入契约一致。"""
+    """组装传给技能 args,与 SKILL.md 输入契约一致(历史与世界书合并成一段背景)。"""
     parts = []
     if si.characters:
         parts.append("[可用绘图角色列表]\n" + si.characters)
-    if si.history:
-        parts.append("[历史前文与世界书]\n" + si.history)
+    background = "\n\n".join(x for x in (si.history, si.worldbook) if x)
+    if background:
+        parts.append("[历史前文与世界书]\n" + background)
     parts.append("[剧情与设定素材]\n" + si.story)
     if si.user_request:
         parts.append("[用户需求]\n" + si.user_request)

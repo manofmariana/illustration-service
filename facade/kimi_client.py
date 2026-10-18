@@ -39,7 +39,7 @@ class KimiClient:
         return body.get("data")
 
     async def run_skill(self, args: str, skill_name: str | None = None) -> str:
-        """跑一次指定技能(默认 story-illustrator),返回 agent 最终文本。失败抛 KimiError。"""
+        """跑一次指定技能,返回 agent 最终文本。失败抛 KimiError。"""
         skill_name = skill_name or config.SKILL_NAME
         data = await self._data(await self._client.post(
             "/api/v1/sessions", json={"metadata": {"cwd": config.SKILL_CWD}}

@@ -1,13 +1,13 @@
 ---
 name: story-illustrator
-description: 小说正文插图提示词设计师——接收在场角色资料/场景信息/当前正文/图片数量,按决策树与槽位规则组装 Anima3 提示词,Grep 查询本地标签库,严格输出 N 个 <image><anchor><prompt> 块,全自动不提问。题材不限(修仙/都市/西幻/科幻等均可),一切以正文与角色资料为准
+description: 小说正文插图提示词设计师——接收在场角色资料/场景信息/当前正文/图片数量,按决策树与槽位规则组装 Anima 提示词,Grep 查询本地标签库,严格输出 N 个 <image><anchor><prompt> 块,全自动不提问。题材不限(修仙/都市/西幻/科幻等均可),一切以正文与角色资料为准
 type: prompt
 whenToUse: 由 illustration-service facade 通过 REST 激活,处理正文插图提示词生成任务时
 ---
 
 # story-illustrator — 正文插图提示词设计师
 
-为 Anima3 工作流生成正文插图提示词。输入是小说正文+角色资料,输出是严格格式的 `<image>` 块,直接写入 ComfyUI 的 CLIP Text Encode 节点。
+为 Anima 工作流生成正文插图提示词。输入是小说正文+角色资料,输出是严格格式的 `<image>` 块,直接写入 ComfyUI 的 CLIP Text Encode 节点。
 
 ## 0. 铁律(最高优先级)
 
