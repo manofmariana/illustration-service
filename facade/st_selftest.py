@@ -1,66 +1,36 @@
 """ST 提取层自测:不启动 agent,只验标签切分。
 
-素材直接取自仓库里的智绘姬预设(`presets/正文生图LLM预设.json`),宏用样例值填掉。
-预设里改了标签名或删了某一条,这里会跟着红,不会出现"测试通过但线上提取不到"。
+样例就是 `st_extractor` 文档里那套标签约定(六个标签各一条消息),不读任何插件的配置文件:
+接别的插件、换别的标签时,要改的是提取器和这里的样例,而不是让自测去校验别人的预设。
 
     ..\\python_embeded\\python.exe -m facade.st_selftest
 """
-import json
 import sys
 
-from . import config, st_extractor
+from . import st_extractor
 
 STORY = "雨夜，她把手机推到我面前，屏幕上只有两个字：别走。窗外的霓虹在雨里晕开。"
-
-PRESET = config.BASE_DIR / "presets" / "正文生图LLM预设.json"
-
-# 预设里的宏 → 样例值
-MACROS = {
-    "{{正文}}": STORY,
-    "{{用户需求}}": "竖构图，要看清屏幕上的字",
-    "{{上下文}}": "上一轮他们还在争论雨伞归谁。",
-    "{{世界书触发}}": "深渊教团的徽记是倒悬的黑塔。",
-    "{{角色启用列表}}": "林月：黑长直，白毛衣",
-    "{{通用角色启用列表}}": "",
-    "{{通用服装启用列表}}": "",
-}
-
-# 提取器认识的六个标签,预设里缺一个就说明两边不同步了
-TAGS = ("剧情原文", "用户需求", "生图数量", "可用绘图角色列表", "历史前文", "世界书条目")
 
 
 def _body(*messages: str) -> dict:
     return {"messages": [{"role": "user", "content": m} for m in messages]}
 
 
-def _preset_messages() -> list[str]:
-    data = json.loads(PRESET.read_text(encoding="utf-8"))
-    entries = next(iter(data.values()))["entries"]
-    messages = []
-    for entry in entries:
-        if not entry.get("enabled", True):
-            continue
-        text = entry["content"]
-        for macro, value in MACROS.items():
-            text = text.replace(macro, value)
-        messages.append(text)
-    return messages
-
-
-def _new_preset_body() -> dict:
-    return _body(*_preset_messages())
-
+def _sample_body() -> dict:
+    return _body(
+        "<生图数量>\n\n2\n\n</生图数量>",
+        "<世界书条目>\n\n深渊教团的徽记是倒悬的黑塔。\n\n</世界书条目>",
+        "<可用绘图角色列表>\n\n当前可用**绘图**特定角色列表：\n*****\n林月：黑长直，白毛衣\n*****\n\n</可用绘图角色列表>",
+        "<历史前文>\n\n上一轮他们还在争论雨伞归谁。\n\n</历史前文>",
+        f"<剧情原文>\n{STORY}\n</剧情原文>\n",
+        "<用户需求>\n\n竖构图，要看清屏幕上的字\n\n</用户需求>",
+    )
 
 
 def main() -> int:
     failures: list[str] = []
 
-    blob = "".join(_preset_messages())
-    missing = [tag for tag in TAGS if f"<{tag}>" not in blob]
-    if missing:
-        failures.append(f"预设里缺标签(与提取器不同步): {missing}")
-
-    si = st_extractor.extract(_new_preset_body())
+    si = st_extractor.extract(_sample_body())
     if STORY not in si.story:
         failures.append(f"正文没切出来: {si.story[:40]!r}")
     if "<剧情原文>" in si.story:
