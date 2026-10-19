@@ -130,14 +130,6 @@ run_gateway.bat
 
 所以：**只想开箱即用，就用 DSH。** 想用 KimiCode，请自己改好 `facade/config.py` 里的 `KIMI_MODEL` 和你的 `config.toml`，或者直接把这段交给 AI 让它帮你配置好。
 
-### 其他 Harness
-
-1. **会话怎么调用**。每个 agent 起会话的方式都不一样，`run(args, mode)` 这一层就是干这个的：按它自己的规范拼命令或请求（起子进程还是打 HTTP）、把素材喂进去、收回最终文本。现有两份实现可以直接对照：`dsh.py` 是起 `dsh --profile headless` 子进程、任务写 stdin；`kimi.py` 是打 `kimi web` 的 HTTP 接口、按技能名激活。返回值就是最终文本，失败抛 `AgentError`。
-
-2. **注册**。新增 `facade/runtimes/<name>.py`，在 `facade/runtimes/__init__.py` 的 `BACKENDS` 里加一行。管理页的 harness 下拉、`backend_for()` 的选择、按模式指定后端（`AGENT_BACKEND_<MODE>` 或设置文件里的 `backends`）都会自动认到，不用改别处。
-
-3. **SKILL 与 MCP**。技能放 `.agents/skills/<name>/SKILL.md`，DSH 原生扫描这个目录，别的 agent 要按它自己的规范把根指过去；MCP 清单在 `.kimi-code/mcp.json`，kimi 直接读，DSH 由运行时代码翻成 `dsh-mcp-client` 条目，新后端照同样办法在生成配置时把自己的 MCP 定义写出去即可。
-
 ---
 
 ## 输出契约
@@ -228,43 +220,49 @@ JSON VALID: NO -> Expecting ',' delimiter
 
 ## 参与贡献
 
-项目本身不大，改动面也很清楚：服务骨架在 `facade/`，方法论在 `.agents/skills/`，插件侧的配套（预设、截图）在 `presets/`、`docs/`。下面是三个最常见的扩展方向，以及提交之前要跑的东西。
+### 接入其他生图插件
 
-### 接别的插件
+本服务不绑定插件本身，只依赖两端的文本规范，所以更换插件只需要对齐两处：
 
-服务不认插件本身，只认两端的文本规范，所以换插件只需要对齐两处：
-
-| 环节 | 要对齐什么 | 改哪里 |
+| 环节 | 对齐内容 | 改动位置 |
 |---|---|---|
-| 请求进来 | 插件用什么标签或字段装正文、需求、张数、角色、历史 | `facade/st_extractor.py`（标签式）或 `facade/extractor.py`（字段式） |
-| 返回出去 | 插件按什么解析：正则、JSON、还是 SSE 流 | `facade/sse.py` 的四种响应 |
+| 请求 | 正文、需求、张数、角色、历史各自的标签或字段 | `facade/st_extractor.py`（标签式）或 `facade/extractor.py`（字段式） |
+| 返回 | 插件解析所用的格式：正则、JSON 或 SSE 流 | `facade/sse.py` 的四种响应 |
 
-标签式这套是通用的：只要你的插件能把素材塞进 `<剧情原文>`、`<用户需求>`、`<生图数量>` 这类标签，现有的提取器和 SKILL 都能直接复用，一行代码都不用改。
+标签式接口可直接复用：插件只要把素材写入 `<剧情原文>`、`<用户需求>`、`<生图数量>` 等标签，现有的提取器与 SKILL 无需修改。
 
 ### 新增一种模式
 
-换生图模型落到代码上就是加一条模式：SKILL 换写法，校验器换规则，路由、重试、返回格式原地复用。
+一种模式对应一条「提取 → SKILL → 解析 → 校验 → 渲染」链路，在 `facade/modes.py` 的 `MODES` 中注册，管理页、URL 路由与 `/v1/models` 均从中读取。
 
-一条模式就是一套「提取 → 技能 → 解析 → 校验 → 渲染」，注册在 `facade/modes.py` 的 `MODES` 里，管理页、URL 路由和 `/v1/models` 会自动认到它。
+换生图模型即为新增一条模式：SKILL 改写法，校验器改规则，路由、重试与返回格式沿用现有实现。
 
-1. **定输出契约**。想清楚 `<image>` 里有哪些子标签、`<prompts>` 装什么（tag 串、散文、还是布局 JSON）。契约一确定，SKILL、校验器、工作流三边照着写就行。
-2. **写 SKILL**。在 `.agents/skills/story-illustrator-<模式名>/` 下建 `SKILL.md`：frontmatter 必须有 kebab-case 的 `name`（与目录同名）和一句话 `description`；正文写清铁律、决策树、槽位顺序、标签库怎么查、输出长什么样。素材多了再拆 `rules/`、`tags/`，agent 会按需读。
-3. **写校验器**。三个函数：`parse_blocks()` 把回复切成块，`validate()` 返回错误清单（空列表即通过），`render()` 输出插件要的文本。校验是为了给重试一个靶子——不通过就把错误清单丢回给 agent 重写。
-4. **注册模式**。在 `MODES` 里加一条 `Mode(key, title, skill, extract, build_args, parse, validate, render)`。`extract` 和 `build_args` 能复用就复用，现在三条酒馆分支就共用同一套提取。
-5. **给自测**。仿 `facade/st_selftest.py` 写几条负样本（缺标签、数量越界、格式坏掉），比每次真跑模型便宜得多。
+1. **确定输出契约**。定义 `<image>` 的子标签与 `<prompts>` 的格式（tag 串、散文或布局 JSON）。契约确定后，SKILL、校验器与工作流按同一份契约实现。
+2. **编写 SKILL**。在 `.agents/skills/story-illustrator-<模式名>/` 下创建 `SKILL.md`：frontmatter 包含与目录同名的 kebab-case `name` 与一行 `description`；正文包含铁律、决策树、槽位顺序、标签库检索方式与输出契约。素材规模较大时拆到 `rules/`、`tags/`，由 agent 按需读取。
+3. **实现校验器**。三个函数：`parse_blocks()` 将回复切分为结构块，`validate()` 返回错误列表（空列表表示通过），`render()` 生成插件所需文本。校验结果用于驱动重试，未通过时将错误列表回传 agent。
+4. **注册模式**。在 `MODES` 中新增 `Mode(key, title, skill, extract, build_args, parse, validate, render)`。`extract` 与 `build_args` 可复用，三条酒馆分支共用同一套提取逻辑。
+5. **补充自测**。参照 `facade/st_selftest.py` 编写负样本（缺标签、数量越界、格式错误），避免每次依赖真实模型。
 
-模式 key 同时是 URL 前缀和模型名（`/<key>/v1/...`、`/v1/models` 里的 id），取短一点。改过 key 又想兼容旧调用，在 `MODES` 下面的 `ALIASES` 里留一条映射即可。
+模式 key 同时作为 URL 前缀与模型名（`/<key>/v1/...`、`/v1/models` 中的 id）。若需兼容旧调用，在 `MODES` 下方的 `ALIASES` 中保留映射。
+
+### 使用其他 Harness
+
+1. **会话调用**。各 agent 的会话启动方式不同，由 `run(args, mode) -> str` 统一适配：按其规范构造命令或请求（子进程或 HTTP），传入素材，返回最终文本，失败抛出 `AgentError`。可对照两个现有实现：`dsh.py` 启动 `dsh --profile headless` 子进程并通过 stdin 传入任务；`kimi.py` 调用 `kimi web` 的 HTTP 接口并按技能名激活。
+
+2. **注册**。新增 `facade/runtimes/<name>.py`，在 `facade/runtimes/__init__.py` 的 `BACKENDS` 中注册。管理页的 harness 下拉、`backend_for()` 的选择、按模式指定后端（`AGENT_BACKEND_<MODE>` 或设置文件中的 `backends`）均自动读取，无需改动其他位置。
+
+3. **SKILL 与 MCP**。技能位于 `.agents/skills/<name>/SKILL.md`：DSH 原生扫描该目录，其他 agent 需按其规范将技能根指向该路径。MCP 清单位于 `.kimi-code/mcp.json`：kimi 直接读取，DSH 由运行时代码生成 `dsh-mcp-client` 条目；新后端在生成自身配置时写入等价的 MCP 定义。
 
 ### 提交之前
 
-跑一遍两个离线自测，不需要模型也不需要联网：
+提交前执行两个离线自测，无需模型与网络：
 
 ```bat
 ..\python_embeded\python.exe -m facade.st_selftest
 ..\python_embeded\python.exe -m facade.moss_selftest
 ```
 
-改过 `facade/` 下的 Python 记得重启 `run_gateway.bat`，否则进程里跑的还是旧代码。仓库里不要留 `instance/`、`logs/` 和任何 API key。
+修改 `facade/` 下的 Python 后需重启 `run_gateway.bat`，否则进程仍运行旧代码。仓库中不得包含 `instance/`、`logs/` 及任何 API key。
 
 ---
 
