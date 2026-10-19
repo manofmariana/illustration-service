@@ -132,18 +132,11 @@ run_gateway.bat
 
 ### 其他 Harness
 
-任何能「读一段文本、自己调工具、最后输出一段文本」的 agent 都可以接进来。`facade/runtimes/base.py` 只有一个约定：
+1. **会话怎么调用**。每个 agent 起会话的方式都不一样，`run(args, mode)` 这一层就是干这个的：按它自己的规范拼命令或请求（起子进程还是打 HTTP）、把素材喂进去、收回最终文本。现有两份实现可以直接对照：`dsh.py` 是起 `dsh --profile headless` 子进程、任务写 stdin；`kimi.py` 是打 `kimi web` 的 HTTP 接口、按技能名激活。返回值就是最终文本，失败抛 `AgentError`。
 
-```python
-class AgentRuntime:
-    async def run(self, args: str, mode) -> str: ...
-```
+2. **注册**。新增 `facade/runtimes/<name>.py`，在 `facade/runtimes/__init__.py` 的 `BACKENDS` 里加一行。管理页的 harness 下拉、`backend_for()` 的选择、按模式指定后端（`AGENT_BACKEND_<MODE>` 或设置文件里的 `backends`）都会自动认到，不用改别处。
 
-`args` 是拼好的素材，`mode.skill` 是这次要用的技能名，返回值就是 agent 的最终文本，失败抛 `AgentError`。
-
-接一个命令行 agent，照 `dsh.py` 抄最快：它做的事就是写一份配置、起子进程、把任务从 stdin 喂进去、收 stdout。写完在 `facade/runtimes/__init__.py` 的 `BACKENDS` 里加一行，管理页的 harness 下拉就会多出这一项，别处不用改。
-
-三个容易踩的点：技能目录要让 agent 自己能发现（`.agents/skills` 或等价的配置项）；起子进程时把调用方的会话变量剥掉，否则外层上下文会被带进去；超时要自己兜，`AgentError` 会被网关当成一次失败并触发重试。
+3. **SKILL 与 MCP**。技能放 `.agents/skills/<name>/SKILL.md`，DSH 原生扫描这个目录，别的 agent 要按它自己的规范把根指过去；MCP 清单在 `.kimi-code/mcp.json`，kimi 直接读，DSH 由运行时代码翻成 `dsh-mcp-client` 条目，新后端照同样办法在生成配置时把自己的 MCP 定义写出去即可。
 
 ---
 
