@@ -1,0 +1,66 @@
+{
+    "ComfyUI Agent生图": {
+        "entries": [
+            {
+                "id": "089bf996-72cd-49f9-908c-e51f63152e84",
+                "name": "插入机制",
+                "role": "user",
+                "content": "<生图数量>\n\n2\n\n</生图数量>",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            },
+            {
+                "id": "entry_1792343338411_1",
+                "name": "世界书",
+                "role": "user",
+                "content": "<世界书条目>\n\n{{世界书触发}}\n\n</世界书条目>",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            },
+            {
+                "id": "entry_1792343442677_4",
+                "name": "可用绘图角色列表",
+                "role": "user",
+                "content": "<可用绘图角色列表>\n\n当前可用**绘图**特定角色列表：\n*****\n{{角色启用列表}}\n*****\n当前可采用的通用**绘图**角色列表：\n*****\n{{通用角色启用列表}}\n*****\n\n当前可采用的通用**绘图**服装列表：\n*****\n{{通用服装启用列表}}\n*****\n\n</可用绘图角色列表>",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            },
+            {
+                "id": "fa3d5339-65f4-42f0-a5f4-566baa40e887",
+                "name": "历史前文",
+                "role": "user",
+                "content": "<历史前文>\n\n{{上下文}}\n\n</历史前文>",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            },
+            {
+                "id": "f1f284ea-b31e-48b6-9204-c7705c036fc8",
+                "name": "最新原文",
+                "role": "user",
+                "content": "<剧情原文>\n{{正文}}\n<剧情原文>\n",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            },
+            {
+                "id": "entry_1792343378922_2",
+                "name": "用户需求",
+                "role": "user",
+                "content": "<用户需求>\n\n{{用户需求}}\n\n</用户需求>\n",
+                "enabled": true,
+                "triggerMode": "always",
+                "triggerWords": "",
+                "andTriggerWords": ""
+            }
+        ]
+    }
+}
