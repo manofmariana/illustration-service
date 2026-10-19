@@ -1,6 +1,10 @@
 """MOSS 分支离线自测:不启动 kimi,只跑校验、编译与酒馆插件的去重预演。
 
     ..\\python_embeded\\python.exe -m facade.moss_selftest
+
+`_plugin_dedupe` / `_plugin_pipeline` 是智绘姬(st-chatu8)后处理的复刻。
+插件升级后需要人工对照它源码里的 deduplicateTags、processCharacterPrompt、
+sizeRegex、parsePromptsContent 是否还和自己一致,这里不会自动发现。
 """
 import json
 import re
@@ -113,7 +117,10 @@ def _layout_block(draft: dict, size: str | None = None) -> str:
 
 
 def _plugin_dedupe(prompt: str) -> tuple[str, list[str]]:
-    """预演 st-chatu8 的 deduplicateTags(复刻在本仓库 validator 里的那份)。"""
+    """预演 st-chatu8 的 deduplicateTags(复刻在本仓库 validator 里的那份)。
+
+    只复刻「按逗号切 + 按 base tag 去重」这两步,插件里的其它处理不在范围内。
+    """
     seen: dict[str, str] = {}
     order: list[str] = []
     dropped: list[str] = []
