@@ -8,7 +8,7 @@
 
 本仓库的核心是两部分：一个把 Agent 过程包装成 OpenAI 接口的**中间层服务**（`facade/`），和一组真正干活的**生图提示词 SKILL**（`.agents/skills/`）。服务负责路由、素材提取、校验和返回格式，SKILL 负责怎么把一段剧情写成提示词；换插件或换模型，通常只要换 SKILL。
 
-本服务主要服务于酒馆插件智绘姬：<https://github.com/damoshen123/st-chatu8>，对于凡人修仙传独立前端，已经有较长时间没有做匹配，需要你在双边自行调整许多内容才可以正常使用，有兴趣者可以自行修改，此后的内容说明都以酒馆为基准。
+本服务主要服务于酒馆插件智绘姬：<https://github.com/damoshen123/st-chatu8>，对于凡人修仙传独立前端，已经有**较长时间**没有做匹配，需要你在双边自行调整许多内容才可以正常使用，有兴趣者可以自行修改，此后的内容说明都以酒馆为基准。
 
 本仓库**不附带**工作流文件，因为每个人的模型、VAE、LoRA、采样设置都不一样。这部分内容在智绘姬插件的教程中已经有详细的解释，这里不在赘述。
 
@@ -40,7 +40,7 @@
 | `anima` | 酒馆 · Anima 工作流 | Danbooru tag 串混合英文自然语言 |
 | `moss` | 酒馆 · MOSS-Image（caption） | 英文单段散文 |
 | `layout` | 酒馆 · MOSS-Image（layout） | 布局 JSON |
-| `frz` | 凡人修仙传独立前端 · Anima 工作流 | Danbooru tag 串 |
+| `frz` | 凡人修仙传·独立前端 · Anima 工作流 | Danbooru tag 串 |
 
 每条模式对应一份同名技能：`.agents/skills/story-illustrator-<模式名>/`。
 
@@ -134,19 +134,6 @@ run_gateway.bat
 
 ## 输出契约
 
-### 凡人前端（`frz`）
-
-请求体里是「在场角色完整外观资料 / 场景信息 / 当前正文 / 当前正文生图模式 / 固定输出 N 个」。返回：
-
-```
-<image>
-<anchor>正文原句</anchor>
-<prompt>英文 tag</prompt>
-</image>
-```
-
-`anchor` 必须逐字命中正文、8–30 字、按剧情顺序。
-
 ### 酒馆三条分支（`anima` / `moss` / `layout`）
 
 ```
@@ -179,6 +166,19 @@ JSON VALID: NO -> Expecting ',' delimiter
 **这意味着你的 layout 工作流里必须有一个把 `¦` 换回 `,` 的节点**（ComfyUI 核心的 `StringReplace`，find `¦`，replace `,`），接在正面提示词前面，如下图所示。caption 分支不需要。
 
 ![alt text](docs/img/layout-stringreplace.png)
+
+### 凡人修仙传·独立前端（`frz`）
+
+请求体里是「在场角色完整外观资料 / 场景信息 / 当前正文 / 当前正文生图模式 / 固定输出 N 个」。返回：
+
+```
+<image>
+<anchor>正文原句</anchor>
+<prompt>英文 tag</prompt>
+</image>
+```
+
+`anchor` 必须逐字命中正文、8–30 字、按剧情顺序。
 
 ---
 
@@ -213,7 +213,7 @@ JSON VALID: NO -> Expecting ',' delimiter
 ## 技能与 MCP
 
 - 技能只有一份：`.agents/skills/<name>/SKILL.md`（外加 `rules/`、`tags/`）。KimiCode 按名字激活，DSH 从同一个目录自动发现。改技能只动这里。
-- `.kimi-code/mcp.json` 注册了 Booru-Pictag-Get（搜索 danbooru 标签），技能铁律限定**只用于同人/IP 角色**，每个角色最多 2 次，你可以根据自己的需要修改。DSH 运行时把它翻成 `dsh-mcp-client` 条目，工具名以 `mcp__booru-pictag-get__*` 出现。
+- `.kimi-code/mcp.json` 注册了 Booru-Pictag-Get（搜索 danbooru 标签），当前技能铁律限定**只用于同人/IP 角色**，每个角色最多 2 次，你可以根据自己的需要修改。MCP 主要适配 tag 格式的提示词。DSH 运行时把它翻成 `dsh-mcp-client` 条目，工具名以 `mcp__booru-pictag-get__*` 出现。
 - 这个 MCP 的可执行文件路径是作者自己机器上的（`.venv/Scripts/booru-pictag-get-mcp.exe`），**请让你的AI帮你配置好**。文件不存在时运行时会跳过这个 server 并在日志里记一条，其余功能照常。
 
 ---
