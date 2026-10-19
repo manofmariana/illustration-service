@@ -220,6 +220,8 @@ JSON VALID: NO -> Expecting ',' delimiter
 
 ## 参与贡献
 
+提交流程、代码风格与不要提交的东西见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ### 接入其他生图插件
 
 本服务不绑定插件本身，只依赖两端的文本规范，所以更换插件只需要对齐两处：
