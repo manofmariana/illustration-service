@@ -4,7 +4,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent          # illustration-service/
 SKILL_CWD = str(BASE_DIR)                                  # agent 工作目录(含 .agents/skills)
-SKILL_NAME = "story-illustrator"
+SKILL_NAME = "story-illustrator-frz"
 # 技能只有一份,放 .agents/skills:kimi 与 dsh 都原生扫描这个目录(.agents 是两者共用的约定)
 SKILLS_DIR = BASE_DIR / ".agents" / "skills"
 SHARED_MCP_JSON = BASE_DIR / ".kimi-code" / "mcp.json"

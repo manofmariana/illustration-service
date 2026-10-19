@@ -6,6 +6,8 @@
 
 目前服务包括四种模式，对应不同的生图模型或场景；agent 后端可以在 DSH 与 KimiCode 之间切换。
 
+本仓库的核心是两部分：一个把 Agent 过程包装成 OpenAI 接口的**中间层服务**（`facade/`），和一组真正干活的**生图提示词 SKILL**（`.agents/skills/`）。服务负责路由、素材提取、校验和返回格式，SKILL 负责怎么把一段剧情写成提示词；换插件或换模型，通常只要换 SKILL。
+
 本服务主要服务于酒馆插件智绘姬：<https://github.com/damoshen123/st-chatu8>，对于凡人修仙传独立前端，已经有较长时间没有做匹配，需要你在双边自行调整许多内容才可以正常使用，有兴趣者可以自行修改，此后的内容说明都以酒馆为基准。
 
 本仓库**不附带**工作流文件，因为每个人的模型、VAE、LoRA、采样设置都不一样。这部分内容在智绘姬插件的教程中已经有详细的解释，这里不在赘述。
@@ -20,12 +22,14 @@
 
 1. 酒馆按照配置的预设将信息渲染成一段文本，里面带 `<剧情原文>`、`<用户需求>`、`<生图数量>`、`<可用绘图角色列表>`、`<历史前文>` 这些标签，POST 到 `http://<你的IP>:8388/anima/v1/chat/completions`。
 2. 网关看路径里的 `anima`，选中动画分支；把请求体里的标签逐段切出来，拼成一份「素材」。
-3. 素材丢给 agent（DSH 或 KimiCode），并要求它先加载对应的技能文档（`.agents/skills/story-illustrator-st/SKILL.md`）。技能里写清楚了决策树、槽位顺序、标签库怎么查、输出长什么样。
+3. 素材丢给 agent（DSH 或 KimiCode），并要求它先加载对应的技能文档（`.agents/skills/story-illustrator-anima/SKILL.md`）。技能里写清楚了决策树、槽位顺序、标签库怎么查、输出长什么样。
 4. agent 回一段 `<images><image>…</image></images>`。
 5. 网关把它解析成结构化块，逐项校验：块数对不对、`<regex>` 是不是正文原句、`<size>` 合不合法、有没有禁用词、布局框有没有出界。
 6. 校验不过就带着错误清单让它重写一次（`MAX_RETRIES`）。还不过就返回 502，并在日志里写清楚原因。
 7. 通过后渲染成插件认识的样子返回（普通 JSON 或 SSE 流）。
 8. 插件用 `%prompt%` / `%width%` / `%height%` / `%seed%` 做字符串替换，把你自己的 ComfyUI 工作流填好，提交出图。
+
+这套流程并不绑定智绘姬，也不绑定具体的生图模型。凡是「把正文交给 LLM 写提示词、再填进工作流出图」的插件，只要把两端的规范对齐就能接进来：进去的一侧是请求里**用什么标签装素材**，出来的一侧是**返回什么格式插件才解析得了**。现在的四种模式，就是这组规范的四份实例。
 
 ---
 
@@ -37,6 +41,8 @@
 | `moss` | 酒馆 · MOSS-Image（caption） | 英文单段散文 |
 | `layout` | 酒馆 · MOSS-Image（layout） | 布局 JSON |
 | `frz` | 凡人修仙传独立前端 · Anima 工作流 | Danbooru tag 串 |
+
+每条模式对应一份同名技能：`.agents/skills/story-illustrator-<模式名>/`。
 
 ---
 
@@ -65,7 +71,7 @@ run_gateway.bat
 
 ---
 
-## 导入上下文预设（服务靠它认素材）
+## 导入上下文预设
 
 智绘姬会把你在「LLM → 上下文预设」里配的条目渲染成一段文本发给本服务，本服务靠**标签名**把素材一段段切出来。标签对不上，agent 拿到的就是一堆没有区分的正文。
 
@@ -76,15 +82,13 @@ run_gateway.bat
 
 ![上下文预设](docs/img/plugin-llm-preset.png)
 
-| 标签 | 作用 | 缺了会怎样 |
+| 标签 | 作用 | 备注 |
 |---|---|---|
-| `<剧情原文>` | 要画的那段正文 | 直接报「无法从请求中提取素材」 |
+| `<剧情原文>` | 要画的那段正文 | 缺失报错「无法从请求中提取素材」 |
 | `<用户需求>` | 你这次额外加的要求 | 可选，不影响出图 |
 | `<生图数量>` | 这次画几张 | 缺省按 2 张（超过 6 张也按 2 张） |
-| `<可用绘图角色列表>` | 固定外观，防止换装换脸 | 角色形象容易飘 |
-| `<历史前文>` + `<世界书条目>` | 前后文与设定 | 场景、关系容易串 |
-
-另外别把 `{{正文}}` 这类宏写进固定提示词里——如果请求到达时宏还没被替换，服务会直接报「插件宏未渲染」，而不是拿字面量去画。
+| `<可用绘图角色列表>` | 保留了对智绘姬的角色管理功能的适配 | 无影响，你可以通过世界书条目维护角色形象 |
+| `<历史前文>` + `<世界书条目>` | 前后文与设定 |-|
 
 ---
 
@@ -101,13 +105,14 @@ run_gateway.bat
 - **技能和 MCP 与 KimiCode 共用同一份**：技能在 `.agents/skills/`（两边都原生扫描这个目录），MCP 清单在 `.kimi-code/mcp.json`。运行时生成的 `instance/dsh-agent.patch.yml` 只做两件事：钉模型、把 `mcp.json` 里的 stdio server 插成 `dsh-mcp-client` 条目。
 - **会话**：每次运行都会落成一个正常会话。在 DSH Desktop 中会存在一个 `未分组` 工作区，能看到思考、读了哪个 `rules/`、grep 了什么、最终输出。任务首行带 `# 任务:<模式> | <剧情开头>`，需要注意的是，DSH Desktop的会话无法实时渲染到窗口，只有界面刷新时才会出现会话，最终，这个会话会被放进`illustration service`工作区
 
-![未分组里的新会话](docs/img/dsh-ungrouped.png)
-![归位到 illustration-service 工作区](docs/img/dsh-workspace-session.png)
+![归位到 illustration-service 工作区](docs/img/dsh-session.png)
 
 此外，在任务完成之前，你会看见
 
 ![任务已停止](docs/img/dsh-task-stopped.png)
-*<p align="center"> 这并不是任务真的停止了，同样是由于会话无法实时渲染导致的。</p>*
+
+
+这并不是任务真的停止了，同样是由于会话无法实时渲染导致的。
 
 
 ### KimiCode（更复杂，需要你知道自己在改什么）
@@ -208,6 +213,35 @@ JSON VALID: NO -> Expecting ',' delimiter
 - 技能只有一份：`.agents/skills/<name>/SKILL.md`（外加 `rules/`、`tags/`）。KimiCode 按名字激活，DSH 从同一个目录自动发现。改技能只动这里。
 - `.kimi-code/mcp.json` 注册了 Booru-Pictag-Get（搜索 danbooru 标签），技能铁律限定**只用于同人/IP 角色**，每个角色最多 2 次，你可以根据自己的需要修改。DSH 运行时把它翻成 `dsh-mcp-client` 条目，工具名以 `mcp__booru-pictag-get__*` 出现。
 - 这个 MCP 的可执行文件路径是作者自己机器上的（`.venv/Scripts/booru-pictag-get-mcp.exe`），**请让你的AI帮你配置好**。文件不存在时 DSH 照常跑，只是没有那几个工具。
+
+---
+
+## 扩展
+
+### 接别的插件
+
+服务不认插件本身，只认两端的文本规范，所以换插件只需要对齐两处：
+
+| 环节 | 要对齐什么 | 改哪里 |
+|---|---|---|
+| 请求进来 | 插件用什么标签或字段装正文、需求、张数、角色、历史 | `facade/st_extractor.py`（标签式）或 `facade/extractor.py`（字段式） |
+| 返回出去 | 插件按什么解析：正则、JSON、还是 SSE 流 | `facade/sse.py` 的四种响应 |
+
+标签式这套是通用的：只要你的插件能把素材塞进 `<剧情原文>`、`<用户需求>`、`<生图数量>` 这类标签，现有的提取器和 SKILL 都能直接复用，一行代码都不用改。
+
+### 新增一种模式
+
+换生图模型落到代码上就是加一条模式：SKILL 换写法，校验器换规则，路由、重试、返回格式原地复用。
+
+一条模式就是一套「提取 → 技能 → 解析 → 校验 → 渲染」，注册在 `facade/modes.py` 的 `MODES` 里，管理页、URL 路由和 `/v1/models` 会自动认到它。
+
+1. **定输出契约**。想清楚 `<image>` 里有哪些子标签、`<prompts>` 装什么（tag 串、散文、还是布局 JSON）。契约一确定，SKILL、校验器、工作流三边照着写就行。
+2. **写 SKILL**。在 `.agents/skills/story-illustrator-<模式名>/` 下建 `SKILL.md`：frontmatter 必须有 kebab-case 的 `name`（与目录同名）和一句话 `description`；正文写清铁律、决策树、槽位顺序、标签库怎么查、输出长什么样。素材多了再拆 `rules/`、`tags/`，agent 会按需读。
+3. **写校验器**。三个函数：`parse_blocks()` 把回复切成块，`validate()` 返回错误清单（空列表即通过），`render()` 输出插件要的文本。校验是为了给重试一个靶子——不通过就把错误清单丢回给 agent 重写。
+4. **注册模式**。在 `MODES` 里加一条 `Mode(key, title, skill, extract, build_args, parse, validate, render)`。`extract` 和 `build_args` 能复用就复用，现在三条酒馆分支就共用同一套提取。
+5. **给自测**。仿 `facade/st_selftest.py` 写几条负样本（缺标签、数量越界、格式坏掉），比每次真跑模型便宜得多。
+
+模式 key 同时是 URL 前缀和模型名（`/<key>/v1/...`、`/v1/models` 里的 id），取短一点。改过 key 又想兼容旧调用，在 `MODES` 下面的 `ALIASES` 里留一条映射即可。
 
 ---
 

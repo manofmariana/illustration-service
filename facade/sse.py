@@ -14,7 +14,7 @@ def _rid(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:24]}"
 
 
-def stream_events(text: str, model: str = "story-illustrator"):
+def stream_events(text: str, model: str = "illustration-gateway"):
     """生成 SSE 帧(字符串)。用法:for frame in stream_events(...) yield frame"""
     resp_id = _rid("resp")
     item_id = _rid("msg")
@@ -83,7 +83,7 @@ def stream_events(text: str, model: str = "story-illustrator"):
     return frames
 
 
-def non_stream_response(text: str, model: str = "story-illustrator") -> dict:
+def non_stream_response(text: str, model: str = "illustration-gateway") -> dict:
     """stream=false 时的一次性 JSON 响应。"""
     return {
         "id": _rid("resp"),
@@ -103,7 +103,7 @@ def non_stream_response(text: str, model: str = "story-illustrator") -> dict:
 # ============ Chat Completions API 格式 ============
 # 网页端若走 /chat/completions(messages 数组),响应用 chat.completion.chunk 流
 
-def chat_stream_events(text: str, model: str = "story-illustrator") -> list[str]:
+def chat_stream_events(text: str, model: str = "illustration-gateway") -> list[str]:
     """Chat Completions SSE 帧序列,以 [DONE] 收尾。"""
     cid = _rid("chatcmpl")
     created = int(time.time())
@@ -124,7 +124,7 @@ def chat_stream_events(text: str, model: str = "story-illustrator") -> list[str]
     ]
 
 
-def chat_non_stream_response(text: str, model: str = "story-illustrator") -> dict:
+def chat_non_stream_response(text: str, model: str = "illustration-gateway") -> dict:
     return {
         "id": _rid("chatcmpl"),
         "object": "chat.completion",

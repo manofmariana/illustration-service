@@ -39,7 +39,7 @@ MODES: dict[str, Mode] = {
         Mode(
             key="frz",
             title="凡人修仙传独立前端",
-            skill="story-illustrator",
+            skill="story-illustrator-frz",
             extract=extractor.extract,
             build_args=extractor.build_skill_args,
             parse=validator.parse_blocks,
@@ -49,7 +49,7 @@ MODES: dict[str, Mode] = {
         Mode(
             key="anima",
             title="酒馆 · Anima",
-            skill="story-illustrator-st",
+            skill="story-illustrator-anima",
             extract=st_extractor.extract,
             build_args=st_extractor.build_skill_args,
             parse=st_validator.parse_blocks,
@@ -59,7 +59,7 @@ MODES: dict[str, Mode] = {
         Mode(
             key="moss",
             title="酒馆 · MOSS caption",
-            skill="story-illustrator-st-moss",
+            skill="story-illustrator-moss",
             extract=st_extractor.extract,
             build_args=st_extractor.build_skill_args,
             parse=st_moss_validator.parse_blocks,
@@ -69,7 +69,7 @@ MODES: dict[str, Mode] = {
         Mode(
             key="layout",
             title="酒馆 · MOSS layout",
-            skill="story-illustrator-st-moss-layout",
+            skill="story-illustrator-layout",
             extract=st_extractor.extract,
             build_args=st_extractor.build_skill_args,
             parse=st_moss_layout_validator.parse_blocks,

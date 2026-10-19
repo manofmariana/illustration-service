@@ -1,11 +1,11 @@
 ---
-name: story-illustrator-st-moss-layout
+name: story-illustrator-layout
 description: 小说正文插图提示词设计师(SillyTavern / MOSS-Image Layout 版)——专门产出带像素级布局框的 MOSS-Image Layout 草稿(官方 absolute-pixel 版式规格),用于对白框/手机屏/海报/招牌/多格等"文字位置必须可控"的画面。输出 <images> 包裹的 N 个 <image> 块,每块 regex/title_styled/Tag_think/size/layout 五子标签,全自动不提问
 type: prompt
 whenToUse: 由 illustration-service 网关(:8388)的 layout 分支通过 REST 激活,处理需要精确文字/物件位置的 SillyTavern 生图任务时
 ---
 
-# story-illustrator-st-moss-layout — 正文插图版式设计师(Layout 版)
+# story-illustrator-layout — 正文插图版式设计师(MOSS Layout 版)
 
 为 **MOSS-Image** 生成 **Layout 提示词**。与 caption 版的区别只有一个但很关键:每张图除了整体描述,还要给出**每个可见元素在画布上的像素框**,让模型把文字和物件放在你指定的位置。
 

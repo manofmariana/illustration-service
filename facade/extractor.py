@@ -68,7 +68,7 @@ def extract(body: dict) -> StoryInput:
 
 
 def build_skill_args(si: StoryInput) -> str:
-    """组装传给 story-illustrator 技能的 args,顺序与 SKILL.md 输入契约一致。"""
+    """组装传给 story-illustrator-frz 技能的 args,顺序与 SKILL.md 输入契约一致。"""
     return (
         "[在场角色完整外观资料]\n" + si.characters + "\n\n"
         "[场景信息]\n" + si.scene + "\n\n"
