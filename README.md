@@ -243,7 +243,6 @@ JSON VALID: NO -> Expecting ',' delimiter
 2. **编写 SKILL**。在 `.agents/skills/story-illustrator-<模式名>/` 下创建 `SKILL.md`：frontmatter 包含与目录同名的 kebab-case `name` 与一行 `description`；正文包含铁律、决策树、槽位顺序、标签库检索方式与输出契约。素材规模较大时拆到 `rules/`、`tags/`，由 agent 按需读取。
 3. **实现校验器**。三个函数：`parse_blocks()` 将回复切分为结构块，`validate()` 返回错误列表（空列表表示通过），`render()` 生成插件所需文本。校验结果用于驱动重试，未通过时将错误列表回传 agent。
 4. **注册模式**。在 `MODES` 中新增 `Mode(key, title, skill, extract, build_args, parse, validate, render)`。`extract` 与 `build_args` 可复用，三条酒馆分支共用同一套提取逻辑。
-5. **补充自测**。参照 `facade/st_selftest.py` 编写负样本（缺标签、数量越界、格式错误），避免每次依赖真实模型。
 
 模式 key 同时作为 URL 前缀与模型名（`/<key>/v1/...`、`/v1/models` 中的 id）。若需兼容旧调用，在 `MODES` 下方的 `ALIASES` 中保留映射。
 
@@ -256,13 +255,6 @@ JSON VALID: NO -> Expecting ',' delimiter
 3. **SKILL 与 MCP**。技能位于 `.agents/skills/<name>/SKILL.md`：DSH 原生扫描该目录，其他 agent 需按其规范将技能根指向该路径。MCP 清单位于 `.kimi-code/mcp.json`：kimi 直接读取，DSH 由运行时代码生成 `dsh-mcp-client` 条目；新后端在生成自身配置时写入等价的 MCP 定义。
 
 ### 提交之前
-
-提交前执行两个离线自测，无需模型与网络：
-
-```bat
-..\python_embeded\python.exe -m facade.st_selftest
-..\python_embeded\python.exe -m facade.moss_selftest
-```
 
 修改 `facade/` 下的 Python 后需重启 `run_gateway.bat`，否则进程仍运行旧代码。仓库中不得包含 `instance/`、`logs/` 及任何 API key。
 

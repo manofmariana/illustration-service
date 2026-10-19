@@ -15,15 +15,7 @@
 
 1. Fork 本仓库，从 `main` 切一个分支。
 2. 只改与目的相关的文件，不要顺手改格式或重排文档。
-3. 跑自测：
-
-   ```bat
-   ..\python_embeded\python.exe -m facade.st_selftest
-   ..\python_embeded\python.exe -m facade.moss_selftest
-   ```
-
-   两个自测只依赖标准库，任何 Python 3.11+ 都能直接跑。
-4. 提 PR，写明改了什么、为什么改、跑过哪些自测。
+3. 提 PR，写明改了什么、为什么改。
 
 ## 新增一个模式时的最小改动
 
