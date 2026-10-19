@@ -35,9 +35,9 @@
 
 ## 四种模式
 
-| 模式 | 给谁用 | `<prompts>` 里是什么 |
-|---|---|---|---|
-| `anima` | 酒馆 · Anima 工作流 | Danbooru tag 串 |
+| 模式 | 给谁用 | `<prompts>` 格式 |
+|---|---|---|
+| `anima` | 酒馆 · Anima 工作流 | Danbooru tag 串混合英文自然语言 |
 | `moss` | 酒馆 · MOSS-Image（caption） | 英文单段散文 |
 | `layout` | 酒馆 · MOSS-Image（layout） | 布局 JSON |
 | `frz` | 凡人修仙传独立前端 · Anima 工作流 | Danbooru tag 串 |
@@ -48,7 +48,7 @@
 
 ## 快速开始
 
-**1. 确认你已经启动了 DSH（后端见下一节，这是唯一推荐的路）或Kimicode**
+**1. 确认你已经启动了 DSH 或Kimicode**
 
 **2. 启动服务**
 
@@ -66,8 +66,11 @@ run_gateway.bat
 **4. 在插件中指向本服务**
 
 - 生图后端地址填 `http://<127.0.0.1 或 你的局域网IP>:8388/v1`，本服务将自己包装成了OpenAI url，你可以直接点击 `连接并获取模型` 之后从下拉列表中选择工作模式
+- **API Key 随便输**，本服务不校验它，只要不是空的就行
 - 在智绘姬中导入你对应模型的工作流，此部分内容在插件教程中已有详尽说明
 - **「AI 自主分辨率」保持开启**，否则 `<size>` 不生效
+
+![智绘姬的 LLM 配置](docs/img/plugin-api-config.png)
 
 ---
 
