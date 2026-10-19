@@ -4,7 +4,5 @@
 
 ## 检查
 
-- [ ] 跑过 `python -m facade.st_selftest`
-- [ ] 跑过 `python -m facade.moss_selftest`
 - [ ] 新增模式时：技能目录名与 `MODES` 里的 `key` 一致
 - [ ] 没有提交 `instance/`、`logs/`、任何 API key 或本机绝对路径
