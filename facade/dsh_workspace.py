@@ -1,6 +1,6 @@
 """把 headless 跑出来的 DSH 会话登记到对应工作区,免得在 Desktop 里落到「未分组」。
 
-DSH 的会话目录按 cwd 命名(`--D-ComfyUI_windows_portable-illustration-service--`),
+DSH 的会话目录按 cwd 命名(盘符和路径拼起来,冒号去掉,如 `--C-Users-you-project--`),
 而 Desktop 的分组看 `storages/workspace.json` 里的 sessionIds;headless 不会登记,
 所以它的会话会落在「未分组」。这里在每次运行后补一次登记。
 

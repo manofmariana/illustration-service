@@ -11,12 +11,17 @@ headless 只能用 API key 认证——桌面端的账号登录态依赖 authori
 """
 import asyncio
 import json
+import logging
 import os
+
+from pathlib import Path
 
 import yaml
 
 from .. import config, dsh_workspace, settings
 from .base import AgentError, AgentRuntime
+
+log = logging.getLogger("gateway.dsh")
 
 # 这些环境变量会把调用方(可能是一个 DSH 会话)的上下文带进子进程
 SCRUBBED = ("DSH_PROFILE", "DSH_PROFILE_DIR", "DSH_SESSION_ID", "DSH_WEB_URL", "DSH_SHELL")
@@ -31,7 +36,12 @@ def _mcp_servers() -> list[dict]:
     spec = json.loads(config.SHARED_MCP_JSON.read_text(encoding="utf-8")).get("mcpServers") or {}
     servers = []
     for name, server in spec.items():
-        if not server.get("command"):
+        command = server.get("command")
+        if not command:
+            continue
+        if os.path.isabs(command) and not Path(command).exists():
+            # mcp.json 里可能是别人机器上的路径,不存在就跳过,别每次请求都去 spawn 一个空进程
+            log.warning("MCP %s 的可执行文件不存在,本次跳过: %s", name, command)
             continue
         servers.append({
             "id": f"mcp-{name}",
@@ -39,7 +49,7 @@ def _mcp_servers() -> list[dict]:
             "config": {
                 "serverName": name,
                 "transport": "stdio",
-                "command": server["command"],
+                "command": command,
                 "args": server.get("args") or [],
                 "env": server.get("env") or {},
             },
