@@ -6,7 +6,7 @@
     <世界书条目> … </世界书条目>
     <可用绘图角色列表> … </可用绘图角色列表>
     <历史前文> … </历史前文>
-    <剧情原文> {{正文}} <剧情原文>      ← 闭合标签与开标签同形,取第二次出现
+    <剧情原文> … </剧情原文>
     <用户需求> … </用户需求>
 
 旧预设的 `{@setvar::生图数量::3-4@}` / 「至少N张」仍作兜底。
@@ -81,7 +81,7 @@ def _iter_texts(body: dict):
 
 
 def _tag_content(texts: list[str], tag: str) -> str:
-    """取第一个能匹配到的标签内容;闭合标签缺失时用同名标签当闭合(预设的剧情原文写法)。"""
+    """取第一个命中的标签内容;没有闭合标签时取到该条消息末尾。"""
     open_tag, close_tag = f"<{tag}>", f"</{tag}>"
     for text in texts:
         start = text.find(open_tag)
@@ -89,9 +89,7 @@ def _tag_content(texts: list[str], tag: str) -> str:
             continue
         start += len(open_tag)
         end = text.find(close_tag, start)
-        if end < 0:
-            end = text.find(open_tag, start)
-        content = text[start:end if end > 0 else len(text)].strip()
+        content = text[start:end if end >= 0 else len(text)].strip()
         return "" if MACRO_ONLY_RE.match(content) else content
     return ""
 

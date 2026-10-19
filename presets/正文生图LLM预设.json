@@ -45,7 +45,7 @@
                 "id": "f1f284ea-b31e-48b6-9204-c7705c036fc8",
                 "name": "最新原文",
                 "role": "user",
-                "content": "<剧情原文>\n{{正文}}\n<剧情原文>\n",
+                "content": "<剧情原文>\n{{正文}}\n</剧情原文>\n",
                 "enabled": true,
                 "triggerMode": "always",
                 "triggerWords": "",
