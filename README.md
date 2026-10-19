@@ -8,7 +8,7 @@
 
 本仓库的核心是两部分：一个把 Agent 过程包装成 OpenAI 接口的**中间层服务**（`facade/`），和一组真正干活的**生图提示词 SKILL**（`.agents/skills/`）。服务负责路由、素材提取、校验和返回格式，SKILL 负责怎么把一段剧情写成提示词；换插件或换模型，通常只要换 SKILL。
 
-本服务主要服务于酒馆插件智绘姬：<https://github.com/damoshen123/st-chatu8>，对于凡人修仙传独立前端，已经有**较长时间**没有做匹配，需要你在双边自行调整许多内容才可以正常使用，有兴趣者可以自行修改，此后的内容说明都以酒馆为基准。
+本服务主要服务于[酒馆智绘姬插件](https://github.com/damoshen123/st-chatu8)，对于凡人修仙传独立前端，已经有**较长时间**没有做匹配，需要你在双边自行调整许多内容才可以正常使用，有兴趣者可以自行修改，此后的内容说明都以酒馆为基准。
 
 本仓库**不附带**工作流文件，因为每个人的模型、VAE、LoRA、采样设置都不一样。这部分内容在智绘姬插件的教程中已经有详细的解释，这里不在赘述。
 
@@ -150,7 +150,7 @@ run_gateway.bat
 
 - `anima` 的 `<prompts>` 是 tag 串。
 - `moss` 的 `<prompts>` 是英文单段散文（MOSS 官方 Prompt Enhancer 规格：80–200 词，禁质量词、禁权重语法、禁下划线 tag；画面里的文字用原语言引用）。
-- `layout` 的 `<prompts>` 是 MOSS 官方给出的一种实验性提示词写法，使用 JSON 格式进行画面的布局控制（参考 <https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE_ZH.md>），如果使用这种模式，你需要对你的工作流进行额外调整，具体见下。
+- `layout` 的 `<prompts>` 是 MOSS 官方给出的一种实验性提示词写法，使用 JSON 格式进行画面的布局控制（参考 [MOSS-Image 中文用户指南](https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE_ZH.md)），如果使用这种模式，你需要对你的工作流进行额外调整，具体见下。
 
 ### layout 的逗号转义
 
