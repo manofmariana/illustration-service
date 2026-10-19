@@ -150,7 +150,7 @@ run_gateway.bat
 
 - `anima` 的 `<prompts>` 是 tag 串。
 - `moss` 的 `<prompts>` 是英文单段散文（MOSS 官方 Prompt Enhancer 规格：80–200 词，禁质量词、禁权重语法、禁下划线 tag；画面里的文字用原语言引用）。
-- `layout` 的 `<prompts>` 是MOSS官方给出的一种实验性提示词写法，使用JSON格式进行画面的布局控制（参考`https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE_ZH.md`），如果使用这种模式，你需要对你的工作流进行额外调整，具体见下。
+- `layout` 的 `<prompts>` 是 MOSS 官方给出的一种实验性提示词写法，使用 JSON 格式进行画面的布局控制（参考 <https://github.com/OpenMOSS/MOSS-Image/blob/main/USERGUIDE_ZH.md>），如果使用这种模式，你需要对你的工作流进行额外调整，具体见下。
 
 ### layout 的逗号转义
 
