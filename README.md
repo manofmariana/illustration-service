@@ -65,10 +65,9 @@ run_gateway.bat
 
 **4. 在插件中指向本服务**
 
-- 生图后端地址填 `http://<127.0.0.1 或 你的局域网IP>:8388/v1`，本服务将自己包装成了OpenAI url，你可以直接点击 `连接并获取模型` 之后从下拉列表中选择工作模式
+- 生图后端地址填 `http://<127.0.0.1 或 你的局域网IP>:8388/v1`，本服务将自己包装成了OpenAI url，你可以直接点击 `连接并获取模型` 之后从`模型选择`中选择工作模式，如下图
 - **API Key 随便输**，本服务不校验它，只要不是空的就行
-- 在智绘姬中导入你对应模型的工作流，此部分内容在插件教程中已有详尽说明
-- **「AI 自主分辨率」保持开启**，否则 `<size>` 不生效
+- 在智绘姬中导入你对应模型的工作流，此部分内容在智绘姬插件教程中已有详尽说明，此处不赘述
 
 ![智绘姬的 LLM 配置](docs/img/plugin-api-config.png)
 
@@ -95,9 +94,9 @@ run_gateway.bat
 
 ---
 
-## 后端：只用 DSH
+## Harness：
 
-`facade/runtimes/` 下有两个实现，但**只推荐 DSH**。
+`facade/runtimes/` 下有两个实现，**推荐 DSH**。
 
 ### DSH（推荐）
 
@@ -130,6 +129,21 @@ run_gateway.bat
 *<p align="center"> 你可以在终端中查看kimi token </p>*
 
 所以：**只想开箱即用，就用 DSH。** 想用 KimiCode，请自己改好 `facade/config.py` 里的 `KIMI_MODEL` 和你的 `config.toml`，或者直接把这段交给 AI 让它帮你配置好。
+
+### 其他 Harness
+
+任何能「读一段文本、自己调工具、最后输出一段文本」的 agent 都可以接进来。`facade/runtimes/base.py` 只有一个约定：
+
+```python
+class AgentRuntime:
+    async def run(self, args: str, mode) -> str: ...
+```
+
+`args` 是拼好的素材，`mode.skill` 是这次要用的技能名，返回值就是 agent 的最终文本，失败抛 `AgentError`。
+
+接一个命令行 agent，照 `dsh.py` 抄最快：它做的事就是写一份配置、起子进程、把任务从 stdin 喂进去、收 stdout。写完在 `facade/runtimes/__init__.py` 的 `BACKENDS` 里加一行，管理页的 harness 下拉就会多出这一项，别处不用改。
+
+三个容易踩的点：技能目录要让 agent 自己能发现（`.agents/skills` 或等价的配置项）；起子进程时把调用方的会话变量剥掉，否则外层上下文会被带进去；超时要自己兜，`AgentError` 会被网关当成一次失败并触发重试。
 
 ---
 
@@ -219,7 +233,9 @@ JSON VALID: NO -> Expecting ',' delimiter
 
 ---
 
-## 扩展
+## 参与贡献
+
+项目本身不大，改动面也很清楚：服务骨架在 `facade/`，方法论在 `.agents/skills/`，插件侧的配套（预设、截图）在 `presets/`、`docs/`。下面是三个最常见的扩展方向，以及提交之前要跑的东西。
 
 ### 接别的插件
 
@@ -245,6 +261,17 @@ JSON VALID: NO -> Expecting ',' delimiter
 5. **给自测**。仿 `facade/st_selftest.py` 写几条负样本（缺标签、数量越界、格式坏掉），比每次真跑模型便宜得多。
 
 模式 key 同时是 URL 前缀和模型名（`/<key>/v1/...`、`/v1/models` 里的 id），取短一点。改过 key 又想兼容旧调用，在 `MODES` 下面的 `ALIASES` 里留一条映射即可。
+
+### 提交之前
+
+跑一遍两个离线自测，不需要模型也不需要联网：
+
+```bat
+..\python_embeded\python.exe -m facade.st_selftest
+..\python_embeded\python.exe -m facade.moss_selftest
+```
+
+改过 `facade/` 下的 Python 记得重启 `run_gateway.bat`，否则进程里跑的还是旧代码。仓库里不要留 `instance/`、`logs/` 和任何 API key。
 
 ---
 
