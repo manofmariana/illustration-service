@@ -294,5 +294,3 @@ instance/         本地设置（不入库）
 ## 许可证
 
 [MIT](LICENSE)
-
-本仓库是一个独立服务，通过 HTTP 与插件通信，不构成智绘姬（Aladdin Free Public License）的衍生作品，因此单独采用 MIT。
